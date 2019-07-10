@@ -28,6 +28,15 @@ def back(message):
     bot.send_message(message.chat.id, msg, reply_markup=markup)
 
 
+@bot.message_handler(commands=['help'])
+def help(message):
+    bot.send_message(message.chat.id, """
+Open Source бот, который покажет тебе решение для твоей домашки максимально быстро!
+GitHub: https://github.com/Maks4816/gdz_ukraine
+Приму все пожелания и идеи для доработки бота - @nacknime
+        """)
+
+
 # /start - choice the grade
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -223,9 +232,6 @@ def solution(message):
         db.set_solution(klas, subject, author, type, maintopic, subtopic, subsubtopic, exercise, img)    # set file_id to 'gdz'
     else:
         bot.send_photo(message.chat.id, solution)                                           # if get a file id: send it by file id
-
-
-
 
 
 bot.polling(none_stop=True)

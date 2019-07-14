@@ -197,7 +197,6 @@ def set_subtopic(subtopic, user_id):
 
 # subsubtopic
 def get_subsubtopics(klas, subject, author, type, maintopic, subtopic):
-    
     with connection:
         cursor.execute("""
                 SELECT distinct subsubtopic from gdz
@@ -291,7 +290,6 @@ def set_keyboard_and_msg(data, user_id):
 
 def get_keyboard_and_msg(user_id):
     with connection:
-        
         cursor.execute("""
             SELECT markup
             FROM users

@@ -1,5 +1,6 @@
 import psycopg2
 from config import dbname, user, password, host
+import ipdb
 
 connection = psycopg2.connect(dbname=dbname, user=user,
                               password=password,
@@ -66,6 +67,7 @@ def get_subjects(klas):
         cursor.execute("""
             SELECT distinct subject from gdz
             WHERE klas = (%s)
+            ORDER BY subject
             """, (klas,))
         return cursor.fetchall()
 
@@ -93,6 +95,7 @@ def get_authors(klas, subject):
         cursor.execute("""
                 SELECT distinct author from gdz
                 WHERE klas = (%s) AND subject = (%s)
+                ORDER BY author
                 """, (klas, subject))
         return cursor.fetchall()
 
@@ -120,6 +123,7 @@ def get_types(klas, subject, author):
         cursor.execute("""
                 SELECT distinct type from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s)
+                ORDER BY type
                 """, (klas, subject, author))
         return cursor.fetchall()
 
@@ -147,6 +151,7 @@ def get_maintopics(klas, subject, author, type):
         cursor.execute("""
                 SELECT distinct maintopic from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s)
+                ORDER BY maintopic
                 """, (klas, subject, author, type))
         return cursor.fetchall()
 
@@ -174,6 +179,7 @@ def get_subtopics(klas, subject, author, type, maintopic):
         cursor.execute("""
                 SELECT distinct subtopic from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s)
+                ORDER BY subtopic
                 """, (klas, subject, author, type, maintopic))
         return cursor.fetchall()
 
@@ -197,11 +203,11 @@ def set_subtopic(subtopic, user_id):
 
 # subsubtopic
 def get_subsubtopics(klas, subject, author, type, maintopic, subtopic):
-    
     with connection:
         cursor.execute("""
                 SELECT distinct subsubtopic from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s)
+                ORDER BY subsubtopic
                 """, (klas, subject, author, type, maintopic, subtopic))
         return cursor.fetchall()
 
@@ -226,10 +232,12 @@ def set_subsubtopic(subsubtopic, user_id):
 # exercise
 def get_exercises(klas, subject, author, type, maintopic, subtopic, subsubtopic):
     with connection:
+        # ipdb.set_trace()
         cursor.execute("""
                 SELECT exercise
                 FROM gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s) AND subsubtopic = (%s)
+                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end
                 """, (klas, subject, author, type, maintopic, subtopic, subsubtopic))
         return cursor.fetchall()
 
@@ -290,6 +298,7 @@ def set_keyboard_and_msg(data, user_id):
         connection.commit()
 
 def get_keyboard_and_msg(user_id):
+    # ipdb.set_trace()
     with connection:
         
         cursor.execute("""

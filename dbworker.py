@@ -300,7 +300,6 @@ def set_keyboard_and_msg(data, user_id):
 def get_keyboard_and_msg(user_id):
     # ipdb.set_trace()
     with connection:
-        
         cursor.execute("""
             SELECT markup
             FROM users

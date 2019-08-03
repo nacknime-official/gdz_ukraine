@@ -1,6 +1,5 @@
 import psycopg2
 from config import dbname, user, password, host
-import ipdb
 
 connection = psycopg2.connect(dbname=dbname, user=user,
                               password=password,
@@ -232,12 +231,11 @@ def set_subsubtopic(subsubtopic, user_id):
 # exercise
 def get_exercises(klas, subject, author, type, maintopic, subtopic, subsubtopic):
     with connection:
-        # ipdb.set_trace()
         cursor.execute("""
                 SELECT exercise
                 FROM gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s) AND subsubtopic = (%s)
-                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end
+                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end                                                     # sorting by integers and by text
                 """, (klas, subject, author, type, maintopic, subtopic, subsubtopic))
         return cursor.fetchall()
 
@@ -298,7 +296,6 @@ def set_keyboard_and_msg(data, user_id):
         connection.commit()
 
 def get_keyboard_and_msg(user_id):
-    # ipdb.set_trace()
     with connection:
         cursor.execute("""
             SELECT markup

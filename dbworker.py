@@ -1,23 +1,26 @@
 import psycopg2
 from config import dbname, user, password, host
 
+
 connection = psycopg2.connect(dbname=dbname, user=user,
                               password=password,
                               host=host)
 cursor = connection.cursor()
 
+
 # state
 def get_current_state(user_id):
     with connection:
+        cursor.execute("""
+            SELECT state
+            FROM users
+            WHERE user_id = (%s)
+            """, (str(user_id),))
         try:
-            cursor.execute("""
-                SELECT state
-                FROM users
-                WHERE user_id = (%s)
-                """, (str(user_id),))
             return cursor.fetchone()[0]
-        except:
-            pass
+        except Exception as e:
+            print(e)
+            return None
 
 def set_state(state, user_id):
     with connection:
@@ -36,7 +39,7 @@ def get_and_set_id(user_id):
         a = cursor.fetchone()
         if a is None:
             cursor.execute("""
-                        INSERT INTO users (user_id, klas, subject, author, type, maintopic, subtopic, subsubtopic, exercise, state) 
+                        INSERT INTO users (user_id, klas, subject, author, type, maintopic, subtopic, subsubtopic, exercise, state)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                                 """, (str(user_id), 1, 'None', 'None', 'None', 'None', 'None', 'None', 'None', 0))
             connection.commit()
@@ -49,7 +52,11 @@ def get_klas(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None
 
 def set_klas(klas, user_id):
     with connection:
@@ -68,7 +75,11 @@ def get_subjects(klas):
             WHERE klas = (%s)
             ORDER BY subject
             """, (klas,))
-        return cursor.fetchall()
+        try:
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return None
 
 def set_subject(subject, user_id):
     with connection:
@@ -86,7 +97,11 @@ def get_subject(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+        return None
 
 # author
 def get_authors(klas, subject):
@@ -96,7 +111,11 @@ def get_authors(klas, subject):
                 WHERE klas = (%s) AND subject = (%s)
                 ORDER BY author
                 """, (klas, subject))
-        return cursor.fetchall()
+        try:
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return None
 
 def get_author(user_id):
     with connection:
@@ -105,7 +124,11 @@ def get_author(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None
 
 def set_author(author, user_id):
     with connection:
@@ -124,7 +147,11 @@ def get_types(klas, subject, author):
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s)
                 ORDER BY type
                 """, (klas, subject, author))
-        return cursor.fetchall()
+        try:
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return None
 
 def get_type(user_id):
     with connection:
@@ -133,7 +160,11 @@ def get_type(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None
 
 def set_type(type, user_id):
     with connection:
@@ -152,7 +183,11 @@ def get_maintopics(klas, subject, author, type):
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s)
                 ORDER BY maintopic
                 """, (klas, subject, author, type))
-        return cursor.fetchall()
+        try:
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return None
 
 def get_maintopic(user_id):
     with connection:
@@ -161,7 +196,11 @@ def get_maintopic(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None
 
 def set_maintopic(maintopic, user_id):
     with connection:
@@ -180,7 +219,11 @@ def get_subtopics(klas, subject, author, type, maintopic):
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s)
                 ORDER BY subtopic
                 """, (klas, subject, author, type, maintopic))
-        return cursor.fetchall()
+        try:
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return None
 
 def get_subtopic(user_id):
     with connection:
@@ -189,7 +232,11 @@ def get_subtopic(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None
 
 def set_subtopic(subtopic, user_id):
     with connection:
@@ -208,7 +255,11 @@ def get_subsubtopics(klas, subject, author, type, maintopic, subtopic):
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s)
                 ORDER BY subsubtopic
                 """, (klas, subject, author, type, maintopic, subtopic))
-        return cursor.fetchall()
+        try:
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return None
 
 def get_subsubtopic(user_id):
     with connection:
@@ -217,7 +268,11 @@ def get_subsubtopic(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None
 
 def set_subsubtopic(subsubtopic, user_id):
     with connection:
@@ -235,9 +290,21 @@ def get_exercises(klas, subject, author, type, maintopic, subtopic, subsubtopic)
                 SELECT exercise
                 FROM gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s) AND subsubtopic = (%s)
+<<<<<<< HEAD
                 ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end                                                     # sorting by integers and by text
+=======
+<<<<<<< HEAD
+                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end                                                     # sorting by integers and by text
+=======
+                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end
+>>>>>>> rewrite to aiogram
+>>>>>>> rewrite to aiogram
                 """, (klas, subject, author, type, maintopic, subtopic, subsubtopic))
-        return cursor.fetchall()
+        try:
+            return cursor.fetchall()
+        except Exception as e:
+            print(e)
+            return None
 
 def get_exercise(user_id):
     with connection:
@@ -246,7 +313,11 @@ def get_exercise(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None
 
 def set_exercise(exercise, user_id):
     with connection:
@@ -272,7 +343,11 @@ def get_solution(klas, subject, author, type, maintopic, subtopic, subsubtopic, 
                 FROM gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s) AND subsubtopic = (%s) AND exercise = (%s)
                 """, (klas, subject, author, type, maintopic, subtopic, subsubtopic, exercise))
-            return cursor.fetchone()[0]
+            try:
+                return cursor.fetchone()[0]
+            except Exception as e:
+                print(e)
+                return None
         else:
             return sol_id
 
@@ -302,4 +377,8 @@ def get_keyboard_and_msg(user_id):
             FROM users
             WHERE user_id = (%s)
             """, (str(user_id),))
-        return cursor.fetchone()[0]
+        try:
+            return cursor.fetchone()[0]
+        except Exception as e:
+            print(e)
+            return None

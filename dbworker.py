@@ -181,7 +181,6 @@ def get_maintopics(klas, subject, author, type):
         cursor.execute("""
                 SELECT distinct maintopic from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s)
-                ORDER BY maintopic
                 """, (klas, subject, author, type))
         try:
             return cursor.fetchall()
@@ -217,7 +216,6 @@ def get_subtopics(klas, subject, author, type, maintopic):
         cursor.execute("""
                 SELECT distinct subtopic from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s)
-                ORDER BY subtopic
                 """, (klas, subject, author, type, maintopic))
         try:
             return cursor.fetchall()
@@ -290,15 +288,7 @@ def get_exercises(klas, subject, author, type, maintopic, subtopic, subsubtopic)
                 SELECT exercise
                 FROM gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s) AND subsubtopic = (%s)
-<<<<<<< HEAD
-                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end                                                     # sorting by integers and by text
-=======
-<<<<<<< HEAD
-                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end                                                     # sorting by integers and by text
-=======
                 ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end
->>>>>>> rewrite to aiogram
->>>>>>> rewrite to aiogram
                 """, (klas, subject, author, type, maintopic, subtopic, subsubtopic))
         try:
             return cursor.fetchall()

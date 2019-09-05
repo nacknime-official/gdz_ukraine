@@ -60,15 +60,7 @@ def subsubtopic(klas, subject, author, type, maintopic, subtopic):
 def exercise(klas, subject, author, type, maintopic, subtopic, subsubtopic):
     markup = types.ReplyKeyboardMarkup(row_width=7, resize_keyboard=True)
     buttons = [types.KeyboardButton(i) for i in [j for i in db.get_exercises(klas, subject, author, type, maintopic, subtopic, subsubtopic) for j in i]]
-<<<<<<< HEAD
-    print(buttons)
-=======
-<<<<<<< HEAD
-    print(buttons)
-=======
     markup.add(types.KeyboardButton("Главное меню"))
->>>>>>> rewrite to aiogram
->>>>>>> rewrite to aiogram
     markup.add(types.KeyboardButton("Назад"))
     markup.add(*buttons)
     return markup

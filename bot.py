@@ -1,4 +1,4 @@
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Bot, Dispatcher, executor
 import requests
 from config import TOKEN
 import dbworker as db
@@ -33,13 +33,28 @@ async def back(message):
     await bot.send_message(message.chat.id, msg, reply_markup=markup)
 
 
+# help
 @dp.message_handler(commands='help')
-async def help(message: types.Message):
+async def help(message):
     await bot.send_message(message.chat.id, """
 Open Source бот, который покажет тебе решение для твоей домашки максимально быстро!
 GitHub: https://github.com/Maks4816/gdz_ukraine
 Приму все пожелания и идеи для доработки бота - @nacknime
         """)
+
+
+# send some message to all users
+@dp.message_handler(commands='send_all')
+async def send_all(message):
+    if message.chat.id == 399925974:
+        text = message.text[10:]
+        for user in db.get_all_users():
+            print(user)
+            try:
+                await bot.send_message(user,
+                                       text)
+            except Exception as e:
+                print(e)
 
 
 # /start - choice the grade

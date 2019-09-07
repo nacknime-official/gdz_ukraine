@@ -8,6 +8,19 @@ connection = psycopg2.connect(dbname=dbname, user=user,
 cursor = connection.cursor()
 
 
+# get all users
+def get_all_users():
+    with connection:
+        cursor.execute("""
+            SELECT user_id
+            FROM users
+            """)
+        try:
+            return [i[0] for i in cursor.fetchall()]
+        except Exception as e:
+            print(e)
+            return None
+
 # state
 def get_current_state(user_id):
     with connection:
@@ -71,9 +84,10 @@ def set_klas(klas, user_id):
 def get_subjects(klas):
     with connection:
         cursor.execute("""
-            SELECT distinct subject from gdz
+            SELECT subject, max(id) from gdz
             WHERE klas = (%s)
-            ORDER BY subject
+            GROUP BY subject
+            ORDER BY max(id)
             """, (klas,))
         try:
             return cursor.fetchall()
@@ -107,9 +121,10 @@ def get_subject(user_id):
 def get_authors(klas, subject):
     with connection:
         cursor.execute("""
-                SELECT distinct author from gdz
+                SELECT author, max(id) from gdz
                 WHERE klas = (%s) AND subject = (%s)
-                ORDER BY author
+                GROUP BY author
+                ORDER BY max(id)
                 """, (klas, subject))
         try:
             return cursor.fetchall()
@@ -143,9 +158,10 @@ def set_author(author, user_id):
 def get_types(klas, subject, author):
     with connection:
         cursor.execute("""
-                SELECT distinct type from gdz
+                SELECT type, max(id) from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s)
-                ORDER BY type
+                GROUP BY type
+                ORDER BY max(id)
                 """, (klas, subject, author))
         try:
             return cursor.fetchall()
@@ -179,8 +195,10 @@ def set_type(type, user_id):
 def get_maintopics(klas, subject, author, type):
     with connection:
         cursor.execute("""
-                SELECT distinct maintopic from gdz
+                SELECT maintopic, max(id) from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s)
+                GROUP BY maintopic
+                ORDER BY max(id)
                 """, (klas, subject, author, type))
         try:
             return cursor.fetchall()
@@ -214,8 +232,10 @@ def set_maintopic(maintopic, user_id):
 def get_subtopics(klas, subject, author, type, maintopic):
     with connection:
         cursor.execute("""
-                SELECT distinct subtopic from gdz
+                SELECT subtopic, max(id) from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s)
+                GROUP BY subtopic
+                ORDER BY max(id)
                 """, (klas, subject, author, type, maintopic))
         try:
             return cursor.fetchall()
@@ -249,9 +269,10 @@ def set_subtopic(subtopic, user_id):
 def get_subsubtopics(klas, subject, author, type, maintopic, subtopic):
     with connection:
         cursor.execute("""
-                SELECT distinct subsubtopic from gdz
+                SELECT subsubtopic, max(id) from gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s)
-                ORDER BY subsubtopic
+                GROUP BY subsubtopic
+                ORDER BY max(id)
                 """, (klas, subject, author, type, maintopic, subtopic))
         try:
             return cursor.fetchall()
@@ -285,10 +306,11 @@ def set_subsubtopic(subsubtopic, user_id):
 def get_exercises(klas, subject, author, type, maintopic, subtopic, subsubtopic):
     with connection:
         cursor.execute("""
-                SELECT exercise
+                SELECT exercise, max(id)
                 FROM gdz
                 WHERE klas = (%s) AND subject = (%s) AND author = (%s) AND type = (%s) AND maintopic = (%s) AND subtopic = (%s) AND subsubtopic = (%s)
-                ORDER BY case when try_cast_int(exercise) is not null then exercise::int else 0 end
+                GROUP BY exercise
+                ORDER BY max(id)
                 """, (klas, subject, author, type, maintopic, subtopic, subsubtopic))
         try:
             return cursor.fetchall()

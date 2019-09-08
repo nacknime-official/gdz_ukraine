@@ -52,7 +52,8 @@ async def send_all(message):
             print(user)
             try:
                 await bot.send_message(user,
-                                       text)
+                                       text,
+                                       parse_mode='Markdown')
             except Exception as e:
                 print(e)
 
@@ -92,6 +93,11 @@ async def subject(message):
 async def author(message):
     data = pickle.loads(db.get_keyboard_and_msg(message.chat.id))
     markup = data[str(db.get_current_state(message.chat.id))][0]
+    if message.text[-1] == '…' and len(message.text) == 128:
+        for i in [j['text'] for i in markup.keyboard for j in i]:
+            if i.startswith(message.text[:-1]):
+                message.text = i
+                break
     if message.text not in [j['text'] for i in markup.keyboard for j in i]:
         await bot.send_message(message.chat.id, "Нажми на кнопку!")
         return
@@ -110,6 +116,11 @@ async def author(message):
 async def type(message):
     data = pickle.loads(db.get_keyboard_and_msg(message.chat.id))
     markup = data[str(db.get_current_state(message.chat.id))][0]
+    if message.text[-1] == '…' and len(message.text) == 128:
+        for i in [j['text'] for i in markup.keyboard for j in i]:
+            if i.startswith(message.text[:-1]):
+                message.text = i
+                break
     if message.text not in [j['text'] for i in markup.keyboard for j in i]:
         await bot.send_message(message.chat.id, "Нажми на кнопку!")
         return
@@ -129,6 +140,11 @@ async def type(message):
 async def maintopic(message):
     data = pickle.loads(db.get_keyboard_and_msg(message.chat.id))
     markup = data[str(db.get_current_state(message.chat.id))][0]
+    if message.text[-1] == '…' and len(message.text) == 128:
+        for i in [j['text'] for i in markup.keyboard for j in i]:
+            if i.startswith(message.text[:-1]):
+                message.text = i
+                break
     if message.text not in [j['text'] for i in markup.keyboard for j in i]:
         await bot.send_message(message.chat.id, "Нажми на кнопку!")
         return
@@ -149,6 +165,11 @@ async def maintopic(message):
 async def subtopic(message):
     data = pickle.loads(db.get_keyboard_and_msg(message.chat.id))
     markup = data[str(db.get_current_state(message.chat.id))][0]
+    if message.text[-1] == '…' and len(message.text) == 128:
+        for i in [j['text'] for i in markup.keyboard for j in i]:
+            if i.startswith(message.text[:-1]):
+                message.text = i
+                break
     if message.text not in [j['text'] for i in markup.keyboard for j in i]:
         await bot.send_message(message.chat.id, "Нажми на кнопку!")
         return
@@ -179,6 +200,11 @@ async def subtopic(message):
 async def subsubtopic(message):
     data = pickle.loads(db.get_keyboard_and_msg(message.chat.id))
     markup = data[str(db.get_current_state(message.chat.id))][0]
+    if message.text[-1] == '…' and len(message.text) == 128:
+        for i in [j['text'] for i in markup.keyboard for j in i]:
+            if i.startswith(message.text[:-1]):
+                message.text = i
+                break
     if message.text not in [j['text'] for i in markup.keyboard for j in i]:
         await bot.send_message(message.chat.id, "Нажми на кнопку!")
         return
@@ -209,6 +235,11 @@ async def subsubtopic(message):
 async def exercise(message):
     data = pickle.loads(db.get_keyboard_and_msg(message.chat.id))
     markup = data[str(db.get_current_state(message.chat.id))][0]
+    if message.text[-1] == '…' and len(message.text) == 128:
+        for i in [j['text'] for i in markup.keyboard for j in i]:
+            if i.startswith(message.text[:-1]):
+                message.text = i
+                break
     if message.text not in [j['text'] for i in markup.keyboard for j in i]:
         await bot.send_message(message.chat.id, "Нажми на кнопку!")
         return
@@ -233,6 +264,11 @@ async def exercise(message):
 async def solution(message):
     data = pickle.loads(db.get_keyboard_and_msg(message.chat.id))
     markup = data[str(db.get_current_state(message.chat.id))][0]
+    if message.text[-1] == '…' and len(message.text) == 128:
+        for i in [j['text'] for i in markup.keyboard for j in i]:
+            if i.startswith(message.text[:-1]):
+                message.text = i
+                break
     if message.text not in [j['text'] for i in markup.keyboard for j in i]:
         await bot.send_message(message.chat.id, "Нажми на кнопку!")
         return

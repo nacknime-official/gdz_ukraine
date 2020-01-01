@@ -1,5 +1,5 @@
 # [@gdz_ukraine_bot](https://t.me/gdz_ukraine_bot "https://t.me/gdz_ukraine_bot")
-This is Open Source Telegram Bot, which show you a solution for your school homework!
+That's Open Source Telegram Bot, which show you a solution for your school homework!
 
 ## Used libs:
 - ~~[pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) - comfortable work with Telegram Bot API~~ - not really

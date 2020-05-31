@@ -23,6 +23,12 @@ classes = {
 
 
 class Wrapper:
+    API_SUBJECTS = (
+        "https://vshkole.com/api/get_class_subjects?new-app=1&class_id={}&type=ab"
+    )
+    API_SUBJECT_ENTITIES = "https://vshkole.com/api/get_subject_class_entities?new-app=1&class_id={}&subject_id={}&type=ab"
+    API_ENTITIE = "https://vshkole.com/api/get_entity_by_id?new-app=1&id={}&type=ab"
+
     def __init__(
         self,
         class_: int = None,
@@ -168,12 +174,12 @@ class Wrapper:
 
     # main methods
     async def subjects(self):
-        url = f"https://vshkole.com/api/get_class_subjects?new-app=1&class_id={self.class_}&type=ab"
+        url = self.API_SUBJECTS.format(self.class_)
         data = await self._get_data(url)
         return data
 
     async def subject_entities(self):
-        url = f"https://vshkole.com/api/get_subject_class_entities?new-app=1&class_id={self.class_}&subject_id={self.subject}&type=ab"
+        url = self.API_SUBJECT_ENTITIES.format(self.class_, self.subject)
         data = await self._get_data(url)
         return data
 
@@ -214,7 +220,7 @@ class Wrapper:
         return years
 
     async def entities(self):
-        url = f"https://vshkole.com/api/get_entity_by_id?new-app=1&id={self.book_id}&type=ab"
+        url = self.API_ENTITIE.format(self.book_id)
         data = await self._get_data(url)
         return data
 

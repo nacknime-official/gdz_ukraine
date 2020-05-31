@@ -1,9 +1,9 @@
 from aiogram import types
-from app import config
-from aiogram.dispatcher.storage import FSMContext
-from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.dispatcher.handler import CancelHandler
+from aiogram.dispatcher.middlewares import BaseMiddleware
+from aiogram.dispatcher.storage import FSMContext
 
+from app import config
 from app.utils.states import quiz
 
 

@@ -38,4 +38,3 @@ async def on_shutdown(dispatcher: Dispatcher):
 def setup(runner: Executor):
     runner.on_startup(on_startup)
     runner.on_shutdown(on_shutdown)
-

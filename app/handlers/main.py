@@ -2,13 +2,13 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from app import config
-from app.models.photo import Photo
 from app.misc import dp
+from app.models.photo import Photo
 from app.models.user import User
 from app.utils import markups
+from app.utils.httpx import httpx_worker
 from app.utils.states import UserStates, quiz, state_messages
 from app.utils.wrapper_vshkole import Wrapper_for_bot
-from app.utils.httpx import httpx_worker
 
 
 @dp.message_handler(text="Назад", state=quiz)

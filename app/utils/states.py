@@ -1,4 +1,5 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
+
 import app.config as config
 
 
@@ -18,6 +19,11 @@ class UserStates(StatesGroup):
     Wrapper_subjects = State()
     Wrapper_subject_entities = State()
     Wrapper_entities = State()
+
+
+class AdminStates(StatesGroup):
+    Input_send_all = State()
+    Confirm_send_all = State()
 
 
 quiz = [

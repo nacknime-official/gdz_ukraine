@@ -6,4 +6,3 @@ class Photo(TimedBaseModel):
 
     id = db.Column(db.Integer, primary_key=True, index=True, unique=True)
     photo_id = db.Column(db.String)
-

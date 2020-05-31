@@ -1,4 +1,11 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
+
+from app import config
 
 
 def classes():
@@ -69,4 +76,11 @@ def exercises(exercises):
     markup.add("Главное меню")
     markup.add("Назад")
     markup.add(*exercises)
+    return markup
+
+
+def confirm_send_all():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("Да", callback_data=config.CB_SEND_ALL_YES))
+    markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_SEND_ALL_NO))
     return markup

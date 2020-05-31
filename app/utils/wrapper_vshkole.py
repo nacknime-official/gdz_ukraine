@@ -6,7 +6,6 @@ import httpx
 from app.models.user import User
 from app.utils.httpx import httpx_worker
 
-
 classes = {
     "1": 11,
     "2": 10,

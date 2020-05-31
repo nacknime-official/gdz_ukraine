@@ -1,6 +1,6 @@
+import httpx
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
-import httpx
 
 
 class HttpxWorker:

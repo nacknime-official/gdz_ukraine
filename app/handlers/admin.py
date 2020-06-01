@@ -50,7 +50,7 @@ async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
             print(e)
         else:
             count += 1
-            await asyncio.sleep(0.7)
+            await asyncio.sleep(0.05)
 
     await query.message.answer(config.MSG_SUCCESFUL_SEND_ALL.format(count))
 

@@ -36,5 +36,3 @@ MSG_DONT_WANNA_SEND_ALL = "Ну как хотите :)"
 # admin callback data
 CB_SEND_ALL_YES = "send_all_yes"
 CB_SEND_ALL_NO = "send_all_no"
-
-ADMIN_COMMANDS = ["/send_all"]

@@ -11,13 +11,13 @@ from app.utils import markups
 from app.utils.states import AdminStates
 
 
-@dp.message_handler(commands="send_all", user_id=config.ADMIN_ID, state="*")
+@dp.message_handler(commands="send_all", is_admin=True, state="*")
 async def cmd_send_all(message: types.Message, state: FSMContext):
     await message.answer(config.MSG_INPUT_SEND_ALL)
     await AdminStates.Input_send_all.set()
 
 
-@dp.message_handler(user_id=config.ADMIN_ID, state=AdminStates.Input_send_all)
+@dp.message_handler(is_admin=True, state=AdminStates.Input_send_all)
 async def preview_message_send_all(message: types.Message, state: FSMContext):
     markup = markups.confirm_send_all()
     text = f"""
@@ -32,7 +32,7 @@ async def preview_message_send_all(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(
     lambda query: query.data == config.CB_SEND_ALL_YES,
-    user_id=config.ADMIN_ID,
+    is_admin=True,
     state=AdminStates.Confirm_send_all,
 )
 async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
@@ -57,7 +57,7 @@ async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
 
 @dp.callback_query_handler(
     lambda query: query.data == config.CB_SEND_ALL_NO,
-    user_id=config.ADMIN_ID,
+    is_admin=True,
     state=AdminStates.Confirm_send_all,
 )
 async def send_all_no(query: types.CallbackQuery, state: FSMContext):

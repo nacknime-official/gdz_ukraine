@@ -31,8 +31,5 @@ class Checker(BaseMiddleware):
     async def on_process_message(self, message: types.Message, data: dict):
         state = data.get("state")
 
-        if (
-            message.get_command() not in config.ADMIN_COMMANDS
-            and await state.get_state() in quiz
-        ):
+        if not message.is_command() and await state.get_state() in quiz:
             await self.check(message, state)

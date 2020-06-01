@@ -34,6 +34,11 @@ async def cmd_start(message: types.Message, user: User, state: FSMContext):
     await state.update_data(Keyboard={UserStates.Class_.state: markup.to_python()})
 
 
+@dp.message_handler(lambda message: message.is_command(), state="*")
+async def cmd_any(message: types.Message, user: User, state: FSMContext):
+    await message.answer("Такой команды нету")
+
+
 @dp.message_handler(state=UserStates.Class_)
 async def subject(
     message: types.Message,

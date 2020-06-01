@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-ADMIN_ID = os.getenv("ADMIN_ID")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", default="localhost")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", default=5432)
@@ -14,7 +14,7 @@ POSTGRES_USER = os.getenv("POSTGRES_USER", default="aiogram")
 POSTGRES_DB = os.getenv("POSTGRES_DB", default="aiogram")
 POSTGRES_URI = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
+PREFIX_WRONG_PHOTO_SIZE = "wrong_size_"
 
 # user messages
 MSG_START = "Выберите клас"

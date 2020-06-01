@@ -1,5 +1,7 @@
+from io import BytesIO
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import PhotoDimensions
 
 from app import config
 from app.misc import dp
@@ -243,10 +245,26 @@ async def solution(
     solution_id = int(solution[0])
     solution_url = solution[1]
     photo = await Photo.get(solution_id)
+
     if not photo:
-        img = (await httpx_worker.get(solution_url)).content
-        img_id = (await message.answer_photo(img)).photo[-1].file_id
+        img = await httpx_worker.get(solution_url)
+        img_content = img.content
+        img_filename = img.url.path.split("/")[-1]
+
+        try:
+            img_id = (await message.answer_photo(img_content)).photo[-1].file_id
+        except PhotoDimensions as e:
+            img_id = (
+                await message.answer_document(
+                    types.InputFile(BytesIO(img_content), filename=img_filename)
+                )
+            ).document.file_id
+            img_id = config.PREFIX_WRONG_PHOTO_SIZE + img_id
+
         photo = await Photo.create(id=solution_id, photo_id=img_id)
     else:
         img_id = photo.photo_id
-        await message.answer_photo(img_id)
+        if img_id.startswith(config.PREFIX_WRONG_PHOTO_SIZE):
+            await message.answer_document(img_id[len(config.PREFIX_WRONG_PHOTO_SIZE) :])
+        else:
+            await message.answer_photo(img_id)

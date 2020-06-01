@@ -191,8 +191,8 @@ class Wrapper:
             auth = entitie["authors"]
             lower_author = self.lower_author(auth)
             if lower_author not in used_authors:
-                uni_authors.append(auth)
-                used_authors.append(lower_author)
+                uni_authors.append(auth.strip())
+                used_authors.append(lower_author.strip())
         return uni_authors
 
     async def specifications(self):
@@ -204,7 +204,7 @@ class Wrapper:
             if not specification:
                 specification = "Підручник"
             if self.author == auth and specification not in specifications:
-                specifications.append(specification)
+                specifications.append(specification.strip())
         return specifications
 
     async def years(self):
@@ -212,10 +212,10 @@ class Wrapper:
 
         for entitie in self._subject_entities:
             auth = self.lower_author(entitie["authors"])
-            specification = entitie["specification"]
+            specification = entitie["specification"].strip()
             year = entitie["year"]
             if self.author == auth and self.specification == specification:
-                years.append(year)
+                years.append(year.strip())
         return years
 
     async def entities(self):

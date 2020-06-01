@@ -2,7 +2,7 @@ import asyncio
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import BotBlocked, ChatNotFound
+from aiogram.utils.exceptions import BotBlocked, ChatNotFound, UserDeactivated
 
 from app import config
 from app.misc import bot, dp
@@ -46,7 +46,7 @@ async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
     for user in users:
         try:
             await bot.send_message(user[0], text, parse_mode="html")
-        except (BotBlocked, ChatNotFound) as e:
+        except (BotBlocked, ChatNotFound, UserDeactivated) as e:
             print(e)
         else:
             count += 1

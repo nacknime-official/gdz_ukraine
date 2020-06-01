@@ -12,4 +12,4 @@ class IsAdmin(BoundFilter):
     is_admin: bool
 
     async def check(self, message: types.Message) -> bool:
-        return message.from_user.id != config.ADMIN_ID
+        return message.from_user.id == config.ADMIN_ID

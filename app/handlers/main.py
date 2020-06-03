@@ -11,7 +11,7 @@ from app.models.user import User
 from app.utils import markups
 from app.utils.httpx import httpx_worker
 from app.utils.states import UserStates, quiz, state_messages
-from app.utils.wrapper_vshkole import Wrapper_for_bot
+from app.utils.wrapper_vshkole import WrapperFotBot
 
 
 @dp.message_handler(text="Назад", state=quiz)
@@ -33,8 +33,8 @@ async def back(message: types.Message, user: User, keyboard: dict, state: FSMCon
 async def cmd_start(message: types.Message, user: User, state: FSMContext):
     markup = markups.classes()
     await message.answer(config.MSG_START, reply_markup=markup)
-    await UserStates.Class_.set()
-    await state.update_data(Keyboard={UserStates.Class_.state: markup.to_python()})
+    await UserStates.Grade.set()
+    await state.update_data(Keyboard={UserStates.Grade.state: markup.to_python()})
 
 
 @dp.message_handler(lambda message: message.is_command(), state="*")
@@ -42,16 +42,16 @@ async def cmd_any(message: types.Message, user: User, state: FSMContext):
     await message.answer("Такой команды нету")
 
 
-@dp.message_handler(state=UserStates.Class_)
+@dp.message_handler(state=UserStates.Grade)
 async def subject(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
-    class_ = int(message.text)
-    await user.update(class_=class_).apply()
+    grade = int(message.text)
+    await user.update(grade=grade).apply()
 
     subjects = await wrapper.subjects()
     subjects_name = [subject["name"] for subject in subjects]
@@ -66,11 +66,11 @@ async def subject(
 
 @dp.message_handler(state=UserStates.Subject)
 async def author(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     subject = message.text
     await user.update(subject=subject).apply()
@@ -87,11 +87,11 @@ async def author(
 
 @dp.message_handler(state=UserStates.Author)
 async def specifications(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     author = message.text
     await user.update(author=author).apply()
@@ -108,11 +108,11 @@ async def specifications(
 
 @dp.message_handler(state=UserStates.Specification)
 async def years(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     specification = message.text
     await user.update(specification=specification).apply()
@@ -133,11 +133,11 @@ async def years(
 
 @dp.message_handler(state=UserStates.Years)
 async def main_topic(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     if message.text and message.text.isdigit():
         year = int(message.text)
@@ -157,11 +157,11 @@ async def main_topic(
 
 @dp.message_handler(state=UserStates.Main_topic)
 async def sub_topic(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     main_topic = message.text
     await user.update(main_topic=main_topic).apply()
@@ -183,11 +183,11 @@ async def sub_topic(
 
 @dp.message_handler(state=UserStates.Sub_topic)
 async def sub_sub_topic(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     sub_topic = message.text
     await user.update(sub_topic=sub_topic).apply()
@@ -209,11 +209,11 @@ async def sub_sub_topic(
 
 @dp.message_handler(state=UserStates.Sub_sub_topic)
 async def exercise(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     sub_sub_topic = message.text
     if sub_sub_topic:
@@ -233,11 +233,11 @@ async def exercise(
 
 @dp.message_handler(state=UserStates.Exercise)
 async def solution(
-    message: types.Message,
-    user: User,
-    wrapper: Wrapper_for_bot,
-    keyboard: dict,
-    state: FSMContext,
+        message: types.Message,
+        user: User,
+        wrapper: WrapperFotBot,
+        keyboard: dict,
+        state: FSMContext,
 ):
     exercise = message.text
     await user.update(exercise=exercise).apply()

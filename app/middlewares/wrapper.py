@@ -3,7 +3,7 @@ from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
-from app.utils.wrapper_vshkole import Wrapper_for_bot
+from app.utils.wrapper_vshkole import WrapperFotBot
 
 
 class WrapperMiddleware(BaseMiddleware):
@@ -18,7 +18,7 @@ class WrapperMiddleware(BaseMiddleware):
         keyboard: dict,
     ):
         if command is None or (command is not None and command.command != "start"):
-            w = Wrapper_for_bot(
+            w = WrapperFotBot(
                 user,
                 subjects=wrapper_subjects,
                 subject_entities=wrapper_subject_entities,
@@ -31,7 +31,7 @@ class WrapperMiddleware(BaseMiddleware):
         command = data.get("command")
         user = data.get("user")
 
-        state = data.get("state")
+        state: FSMContext = data.get("state")
         state_data = await state.get_data()
         wrapper_subjects = state_data.get("Wrapper_subjects")
         wrapper_subject_entities = state_data.get("Wrapper_subject_entities")

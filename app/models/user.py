@@ -5,7 +5,7 @@ class User(TimedBaseModel):
     __tablename__ = "users"
 
     user_id = db.Column(db.Integer, primary_key=True, index=True, unique=True)
-    class_ = db.Column(db.Integer)
+    grade = db.Column(db.Integer)
     subject = db.Column(db.String)
     author = db.Column(db.String)
     specification = db.Column(db.String)

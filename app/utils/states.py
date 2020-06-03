@@ -4,7 +4,7 @@ import app.config as config
 
 
 class UserStates(StatesGroup):
-    Class_ = State()
+    Grade = State()
     Subject = State()
     Author = State()
     Specification = State()
@@ -27,7 +27,7 @@ class AdminStates(StatesGroup):
 
 
 quiz = [
-    UserStates.Class_.state,
+    UserStates.Grade.state,
     UserStates.Subject.state,
     UserStates.Author.state,
     UserStates.Specification.state,
@@ -39,7 +39,7 @@ quiz = [
     UserStates.Solution.state,
 ]
 state_messages = {
-    UserStates.Class_.state: config.MSG_START,
+    UserStates.Grade.state: config.MSG_START,
     UserStates.Subject.state: config.MSG_SUBJECT,
     UserStates.Author.state: config.MSG_AUTHOR,
     UserStates.Specification.state: config.MSG_SPECIFICATION,

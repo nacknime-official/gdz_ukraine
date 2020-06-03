@@ -3,7 +3,7 @@ import httpx
 from app.models.user import User
 from app.utils.httpx import httpx_worker
 
-classes = {
+grades = {
     "1": 11,
     "2": 10,
     "3": 9,
@@ -26,23 +26,23 @@ class Wrapper:
     API_ENTITIE = "https://vshkole.com/api/get_entity_by_id?new-app=1&id={}&type=ab"
 
     def __init__(
-        self,
-        class_: int = None,
-        subject: str = None,
-        subjects=None,
-        subject_entities=None,
-        author=None,
-        specification=None,
-        year=None,
-        book_id=None,
-        entities=None,
-        main_topic=None,
-        sub_topic=None,
+            self,
+            grade: int = None,
+            subject: str = None,
+            subjects=None,
+            subject_entities=None,
+            author=None,
+            specification=None,
+            year=None,
+            book_id=None,
+            entities=None,
+            main_topic=None,
+            sub_topic=None,
         sub_sub_topic=None,
         exercise=None,
         solution_id=None,
     ):
-        self._class = class_
+        self._grade = grade
         self._subject = subject
         self._subjects = subjects
         self._subject_entities = subject_entities
@@ -68,12 +68,12 @@ class Wrapper:
 
     # init properties
     @property
-    def class_(self):
-        return classes[str(self._class)]
+    def grade(self):
+        return grades[str(self._grade)]
 
-    @class_.setter
-    def class_(self, class_):
-        self._class = class_
+    @grade.setter
+    def grade(self, grade):
+        self._grade = grade
 
     @property
     def subject(self):
@@ -114,16 +114,16 @@ class Wrapper:
     @property
     def book_id(self):
         if not self._book_id:
-            for entitie in self._subject_entities:
-                auth = self.lower_author(entitie["authors"])
-                specification = entitie["specification"]
-                year = int(entitie["year"])
+            for entity in self._subject_entities:
+                auth = self.lower_author(entity["authors"])
+                specification = entity["specification"]
+                year = int(entity["year"])
                 if (
-                    auth == self.author
-                    and specification == self.specification
-                    and (not self.year or self.year == year)
+                        auth == self.author
+                        and specification == self.specification
+                        and (not self.year or self.year == year)
                 ):
-                    book_id = entitie["id"]
+                    book_id = entity["id"]
         else:
             book_id = self._book_id
         return book_id
@@ -170,12 +170,12 @@ class Wrapper:
 
     # main methods
     async def subjects(self):
-        url = self.API_SUBJECTS.format(self.class_)
+        url = self.API_SUBJECTS.format(self.grade)
         data = await self._get_data(url)
         return data
 
     async def subject_entities(self):
-        url = self.API_SUBJECT_ENTITIES.format(self.class_, self.subject)
+        url = self.API_SUBJECT_ENTITIES.format(self.grade, self.subject)
         data = await self._get_data(url)
         return data
 
@@ -184,8 +184,8 @@ class Wrapper:
         uni_authors = []
         used_authors = []
 
-        for entitie in self._subject_entities:
-            auth = entitie["authors"]
+        for entity in self._subject_entities:
+            auth = entity["authors"]
             lower_author = self.lower_author(auth)
             if lower_author not in used_authors:
                 uni_authors.append(auth.strip())
@@ -195,9 +195,9 @@ class Wrapper:
     async def specifications(self):
         specifications = []
 
-        for entitie in self._subject_entities:
-            auth = self.lower_author(entitie["authors"])
-            specification = entitie["specification"]
+        for entity in self._subject_entities:
+            auth = self.lower_author(entity["authors"])
+            specification = entity["specification"]
             if not specification:
                 specification = "Підручник"
             if self.author == auth and specification not in specifications:
@@ -207,10 +207,10 @@ class Wrapper:
     async def years(self):
         years = []
 
-        for entitie in self._subject_entities:
-            auth = self.lower_author(entitie["authors"])
-            specification = entitie["specification"].strip()
-            year = entitie["year"]
+        for entity in self._subject_entities:
+            auth = self.lower_author(entity["authors"])
+            specification = entity["specification"].strip()
+            year = entity["year"]
             if self.author == auth and self.specification == specification:
                 years.append(year.strip())
         return years
@@ -222,7 +222,7 @@ class Wrapper:
 
     async def main_topics(self):
         self._entities = await self.entities()
-        return [entitie["name"].strip() for entitie in self._entities["contents"]]
+        return [entity["name"].strip() for entity in self._entities["contents"]]
 
     async def sub_topics(self):
         return [
@@ -284,18 +284,18 @@ class Wrapper:
                             yield from grandchildren
 
 
-class Wrapper_for_bot(Wrapper):
+class WrapperFotBot(Wrapper):
     def __init__(self, user: User, **kwargs):
         self._user = user
         self._client = httpx_worker
         super().__init__(**kwargs)
 
     async def subjects(self):
-        self.class_ = self._user.class_
+        self.grade = self._user.grade
         return await super().subjects()
 
     async def authors(self):
-        self.class_ = self._user.class_
+        self.grade = self._user.grade
         self.subject = self._user.subject
         authors = await super().authors()
         entities = self._subject_entities

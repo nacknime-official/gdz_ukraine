@@ -1,6 +1,3 @@
-import asyncio
-from dataclasses import dataclass
-
 import httpx
 
 from app.models.user import User
@@ -63,7 +60,7 @@ class Wrapper:
 
     # init private methods
     async def _close_client(self):
-        await self._client.close()
+        await self._client.aclose()
 
     async def _get_data(self, url):
         r = await self._client.get(url)

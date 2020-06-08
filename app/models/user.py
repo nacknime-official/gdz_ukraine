@@ -14,3 +14,5 @@ class User(TimedBaseModel):
     sub_topic = db.Column(db.String)
     sub_sub_topic = db.Column(db.String)
     exercise = db.Column(db.String)
+
+    is_blocked = db.Column(db.Boolean)

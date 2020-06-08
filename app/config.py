@@ -6,6 +6,7 @@ load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
+ADMIN_USERNAME = str(os.getenv("ADMIN_USERNAME"))
 
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", default="localhost")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", default=5432)
@@ -31,8 +32,12 @@ MSG_WRONG_INPUT = "Тыкни на кнопку внизу"
 # admin messages
 MSG_INPUT_SEND_ALL = "Введите текст для рассылки"
 MSG_SUCCESFUL_SEND_ALL = "Успешно отправлено {} юзерам"
-MSG_DONT_WANNA_SEND_ALL = "Ну как хотите :)"
+MSG_DONT_WANNA = "Ну как хотите :)"
 
 # admin callback data
 CB_SEND_ALL_YES = "send_all_yes"
 CB_SEND_ALL_NO = "send_all_no"
+CB_BLOCK_YES = "block_yes"
+CB_BLOCK_NO = "block_no"
+CB_UNBLOCK_YES = "unblock_yes"
+CB_UNBLOCK_NO = "unblock_no"

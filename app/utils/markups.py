@@ -84,3 +84,17 @@ def confirm_send_all():
     markup.add(InlineKeyboardButton("Да", callback_data=config.CB_SEND_ALL_YES))
     markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_SEND_ALL_NO))
     return markup
+
+
+def confirm_block():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("Да", callback_data=config.CB_BLOCK_YES))
+    markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_BLOCK_NO))
+    return markup
+
+
+def confirm_unblock():
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("Да", callback_data=config.CB_UNBLOCK_YES))
+    markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_UNBLOCK_NO))
+    return markup

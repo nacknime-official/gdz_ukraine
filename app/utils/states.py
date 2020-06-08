@@ -25,6 +25,12 @@ class AdminStates(StatesGroup):
     Input_send_all = State()
     Confirm_send_all = State()
 
+    Input_block = State()
+    Confirm_block = State()
+
+    Input_unblock = State()
+    Confirm_unblock = State()
+
 
 quiz = [
     UserStates.Grade.state,

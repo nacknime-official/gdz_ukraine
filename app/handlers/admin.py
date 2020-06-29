@@ -99,14 +99,14 @@ async def block_confirm(message: types.Message, state: FSMContext):
     else:
         is_blocked = (await User.get(user_id)).is_blocked
         if is_blocked:
-            msg = f"{helper.user_link('Этот', user_id)} юзер и так забанен. Желаете его разбанить?"
+            msg = f"{helper.get_user_link(user_id, 'Этот')} юзер и так забанен. Желаете его разбанить?"
             await state.update_data(Input_unblock=user_id)
             await AdminStates.Confirm_unblock.set()
             return await message.answer(
                 msg, reply_markup=markups.confirm_unblock(), parse_mode="markdown"
             )
         else:
-            msg = f"Вы уверены, что хотите забанить {helper.user_link(user_id)}?"
+            msg = f"Вы уверены, что хотите забанить {helper.get_user_link(user_id)}?"
             excepted = False
         await removed_message.delete()
 

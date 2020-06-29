@@ -26,18 +26,18 @@ class Wrapper:
     API_ENTITIE = "https://vshkole.com/api/get_entity_by_id?new-app=1&id={}&type=ab"
 
     def __init__(
-            self,
-            grade: int = None,
-            subject: str = None,
-            subjects=None,
-            subject_entities=None,
-            author=None,
-            specification=None,
-            year=None,
-            book_id=None,
-            entities=None,
-            main_topic=None,
-            sub_topic=None,
+        self,
+        grade: int = None,
+        subject: str = None,
+        subjects=None,
+        subject_entities=None,
+        author=None,
+        specification=None,
+        year=None,
+        book_id=None,
+        entities=None,
+        main_topic=None,
+        sub_topic=None,
         sub_sub_topic=None,
         exercise=None,
         solution_id=None,
@@ -119,9 +119,9 @@ class Wrapper:
                 specification = entity["specification"]
                 year = int(entity["year"])
                 if (
-                        auth == self.author
-                        and specification == self.specification
-                        and (not self.year or self.year == year)
+                    auth == self.author
+                    and specification == self.specification
+                    and (not self.year or self.year == year)
                 ):
                     book_id = entity["id"]
         else:

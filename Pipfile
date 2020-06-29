@@ -8,6 +8,7 @@ black = "*"
 isort = "*"
 ipdb = "*"
 neovim = "*"
+rope = "*"
 
 [packages]
 aiogram = "*"

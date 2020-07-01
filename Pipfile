@@ -9,6 +9,7 @@ isort = "*"
 ipdb = "*"
 neovim = "*"
 rope = "*"
+mypy = "*"
 
 [packages]
 aiogram = "*"

@@ -18,7 +18,7 @@ async def set_state_data(state: FSMContext, **state_data) -> None:
     :returns:               None
     """
 
-    await state.update_data(state_data)
+    await state.update_data(**state_data)
 
 
 async def set_data_to_db(model: db.Model, **data):
@@ -31,4 +31,4 @@ async def set_data_to_db(model: db.Model, **data):
     :returns:           None
     """
 
-    await model.update(data).apply()
+    await model.update(**data).apply()

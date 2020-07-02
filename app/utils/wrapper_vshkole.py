@@ -284,7 +284,7 @@ class Wrapper:
                             yield from grandchildren
 
 
-class WrapperFotBot(Wrapper):
+class WrapperForBot(Wrapper):
     def __init__(self, user: User, **kwargs):
         self._user = user
         self._client = httpx_worker

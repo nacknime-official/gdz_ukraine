@@ -11,7 +11,7 @@ from app.models.user import User
 from app.utils import markups
 from app.utils.httpx import httpx_worker
 from app.utils.states import UserStates, quiz, state_messages
-from app.utils.wrapper_vshkole import WrapperFotBot
+from app.utils.wrapper_vshkole import WrapperForBot
 
 
 @dp.message_handler(text="Назад", state=quiz)
@@ -46,7 +46,7 @@ async def cmd_any(message: types.Message, user: User, state: FSMContext):
 async def subject(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -68,7 +68,7 @@ async def subject(
 async def author(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -89,7 +89,7 @@ async def author(
 async def specifications(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -110,7 +110,7 @@ async def specifications(
 async def years(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -135,7 +135,7 @@ async def years(
 async def main_topic(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -159,7 +159,7 @@ async def main_topic(
 async def sub_topic(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -185,7 +185,7 @@ async def sub_topic(
 async def sub_sub_topic(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -211,7 +211,7 @@ async def sub_sub_topic(
 async def exercise(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -235,7 +235,7 @@ async def exercise(
 async def solution(
     message: types.Message,
     user: User,
-    wrapper: WrapperFotBot,
+    wrapper: WrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):

@@ -1,3 +1,8 @@
+"""
+Admin logic module
+Specialize in admin features
+"""
+
 import asyncio
 import typing
 

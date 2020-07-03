@@ -8,20 +8,21 @@ import typing
 
 from aiogram import Bot, types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import base
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, UserDeactivated
 
 from app.models.user import User
 
+from . import base
+
 
 async def send_message_catching_errors(
     bot: Bot,
-    chat_id: typing.Union[base.Integer, base.String],
-    text: base.String,
-    parse_mode: typing.Union[base.String, None] = None,
-    disable_web_page_preview: typing.Union[base.Boolean, None] = None,
-    disable_notification: typing.Union[base.Boolean, None] = None,
-    reply_to_message_id: typing.Union[base.Integer, None] = None,
+    chat_id: typing.Union[types.base.Integer, types.base.String],
+    text: types.base.String,
+    parse_mode: typing.Union[types.base.String, None] = None,
+    disable_web_page_preview: typing.Union[types.base.Boolean, None] = None,
+    disable_notification: typing.Union[types.base.Boolean, None] = None,
+    reply_to_message_id: typing.Union[types.base.Integer, None] = None,
     reply_markup: typing.Union[
         types.InlineKeyboardMarkup,
         types.ReplyKeyboardMarkup,
@@ -73,7 +74,7 @@ async def set_sending_text(sending_text: str, state: FSMContext) -> None:
     :returns:       None
     """
 
-    await state.update_data(Input_send_all=sending_text)
+    await base.set_state_data(state, Input_send_all=sending_text)
 
 
 async def get_sending_text(state: FSMContext) -> str:
@@ -129,7 +130,7 @@ async def set_blocking_user_id(
     """
 
     blocking_user_id = int(blocking_user_id)
-    await state.update_data(Input_block=blocking_user_id)
+    await base.set_state_data(state, Input_block=blocking_user_id)
 
 
 async def get_blocking_user_id(state: FSMContext) -> int:
@@ -159,7 +160,7 @@ async def set_unblocking_user_id(
     """
 
     unblocking_user_id = int(unblocking_user_id)
-    await state.update_data(Input_unblock=unblocking_user_id)
+    await base.set_state_data(state, Input_unblock=unblocking_user_id)
 
 
 async def get_unblocking_user_id(state: FSMContext) -> int:
@@ -189,7 +190,7 @@ async def block_user(user_id: typing.Union[int, str], user_model: User) -> User:
 
     user_id = int(user_id)
     user = await user_model.get(user_id)
-    await user.update(is_blocked=True).apply()
+    await base.set_data_to_db(user_model, is_blocked=True)
 
     return user
 
@@ -206,7 +207,7 @@ async def unblock_user(user_id: typing.Union[int, str], user_model: User) -> Use
 
     user_id = int(user_id)
     user = await user_model.get(user_id)
-    await user.update(is_blocked=False).apply()
+    await base.set_data_to_db(user_model, is_blocked=False)
 
     return user
 

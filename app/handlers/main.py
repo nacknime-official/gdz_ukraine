@@ -1,10 +1,8 @@
-from io import BytesIO
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import PhotoDimensions
 
-from app import config
+from app import config, services
 from app.misc import dp
 from app.models.photo import Photo
 from app.models.user import User
@@ -16,16 +14,10 @@ from app.utils.wrapper_vshkole import WrapperForBot
 
 @dp.message_handler(text="Назад", state=quiz)
 async def back(message: types.Message, user: User, keyboard: dict, state: FSMContext):
-    msg = None
-    while not msg:
-        prev_state = await UserStates.previous()
-        markup = keyboard.get(prev_state)
-        if markup is None:
-            continue
-        else:
-            msg = state_messages[prev_state]
-
-    await message.answer(msg, reply_markup=markup)
+    prev_msg, prev_markup = await services.user.get_previous_message_and_markup(
+        UserStates, keyboard, state_messages
+    )
+    await message.answer(prev_msg, reply_markup=prev_markup)
 
 
 @dp.message_handler(text="Главное меню", state="*")
@@ -33,8 +25,11 @@ async def back(message: types.Message, user: User, keyboard: dict, state: FSMCon
 async def cmd_start(message: types.Message, user: User, state: FSMContext):
     markup = markups.classes()
     await message.answer(config.MSG_START, reply_markup=markup)
-    await UserStates.Grade.set()
-    await state.update_data(Keyboard={UserStates.Grade.state: markup.to_python()})
+
+    keyboard: dict = {}
+    next_state = UserStates.Grade
+    await next_state.set()
+    await services.user.set_next_state_markup(next_state, keyboard, markup, state)
 
 
 @dp.message_handler(lambda message: message.is_command(), state="*")
@@ -51,7 +46,7 @@ async def subject(
     state: FSMContext,
 ):
     grade = int(message.text)
-    await user.update(grade=grade).apply()
+    await services.base.set_data_to_db(user, grade=grade)
 
     subjects = await wrapper.subjects()
     subjects_name = [subject["name"] for subject in subjects]
@@ -60,8 +55,8 @@ async def subject(
 
     next_state = UserStates.Subject
     await next_state.set()
-    keyboard[next_state.state] = markup.to_python()
-    await state.update_data(Keyboard=keyboard, Wrapper_subjects=subjects)
+    await services.user.set_next_state_markup(next_state, keyboard, markup, state)
+    await services.base.set_state_data(state, Wrapper_subjects=subjects)
 
 
 @dp.message_handler(state=UserStates.Subject)
@@ -73,7 +68,7 @@ async def author(
     state: FSMContext,
 ):
     subject = message.text
-    await user.update(subject=subject).apply()
+    await services.base.set_data_to_db(user, subject=subject)
 
     authors, entities = await wrapper.authors()
     markup = markups.authors(authors)
@@ -81,8 +76,8 @@ async def author(
 
     next_state = UserStates.Author
     await next_state.set()
-    keyboard[next_state.state] = markup.to_python()
-    await state.update_data(Keyboard=keyboard, Wrapper_subject_entities=entities)
+    await services.user.set_next_state_markup(next_state, keyboard, markup, state)
+    await services.base.set_state_data(state, Wrapper_subject_entities=entities)
 
 
 @dp.message_handler(state=UserStates.Author)
@@ -94,7 +89,7 @@ async def specifications(
     state: FSMContext,
 ):
     author = message.text
-    await user.update(author=author).apply()
+    await services.base.set_data_to_db(user, author=author)
 
     specifications = await wrapper.specifications()
     markup = markups.specifications(specifications)
@@ -102,8 +97,7 @@ async def specifications(
 
     next_state = UserStates.Specification
     await next_state.set()
-    keyboard[next_state.state] = markup.to_python()
-    await state.update_data(Keyboard=keyboard)
+    await services.user.set_next_state_markup(next_state, keyboard, markup, state)
 
 
 @dp.message_handler(state=UserStates.Specification)
@@ -115,7 +109,7 @@ async def years(
     state: FSMContext,
 ):
     specification = message.text
-    await user.update(specification=specification).apply()
+    await services.base.set_data_to_db(user, specification=specification)
 
     years = await wrapper.years()
     next_state = UserStates.Years
@@ -123,8 +117,7 @@ async def years(
         markup = markups.years(years)
         await message.answer(config.MSG_YEARS, reply_markup=markup)
         await next_state.set()
-        keyboard[next_state.state] = markup.to_python()
-        await state.update_data(Keyboard=keyboard)
+        await services.user.set_next_state_markup(next_state, keyboard, markup, state)
     else:
         keyboard[next_state.state] = None
         message.text = None
@@ -139,11 +132,10 @@ async def main_topic(
     keyboard: dict,
     state: FSMContext,
 ):
+    year = None
     if message.text and message.text.isdigit():
         year = int(message.text)
-        await user.update(year=year).apply()
-    else:
-        await user.update(year=None).apply()
+    await services.base.set_data_to_db(user, year=year)
 
     main_topics, entities = await wrapper.main_topics()
     markup = markups.main_topics(main_topics)
@@ -151,8 +143,8 @@ async def main_topic(
 
     next_state = UserStates.Main_topic
     await next_state.set()
-    keyboard[next_state.state] = markup.to_python()
-    await state.update_data(Keyboard=keyboard, Wrapper_entities=entities)
+    await services.user.set_next_state_markup(next_state, keyboard, markup, state)
+    await services.base.set_state_data(state, Wrapper_entities=entities)
 
 
 @dp.message_handler(state=UserStates.Main_topic)
@@ -164,7 +156,7 @@ async def sub_topic(
     state: FSMContext,
 ):
     main_topic = message.text
-    await user.update(main_topic=main_topic).apply()
+    await services.base.set_data_to_db(user, main_topic=main_topic)
 
     sub_topics = await wrapper.sub_topics()
     next_state = UserStates.Sub_topic
@@ -173,8 +165,7 @@ async def sub_topic(
         await message.answer(config.MSG_SUB_TOPIC, reply_markup=markup)
 
         await next_state.set()
-        keyboard[next_state.state] = markup.to_python()
-        await state.update_data(Keyboard=keyboard)
+        await services.user.set_next_state_markup(next_state, keyboard, markup, state)
     else:
         keyboard[next_state.state] = None
         message.text = None
@@ -190,7 +181,7 @@ async def sub_sub_topic(
     state: FSMContext,
 ):
     sub_topic = message.text
-    await user.update(sub_topic=sub_topic).apply()
+    await services.base.set_data_to_db(user, sub_topic=sub_topic)
 
     sub_sub_topics = await wrapper.sub_sub_topics()
     next_state = UserStates.Sub_sub_topic
@@ -199,8 +190,7 @@ async def sub_sub_topic(
         await message.answer(config.MSG_SUB_SUB_TOPIC, reply_markup=markup)
 
         await next_state.set()
-        keyboard[next_state.state] = markup.to_python()
-        await state.update_data(Keyboard=keyboard)
+        await services.user.set_next_state_markup(next_state, keyboard, markup, state)
     else:
         keyboard[next_state.state] = None
         message.text = None
@@ -216,10 +206,7 @@ async def exercise(
     state: FSMContext,
 ):
     sub_sub_topic = message.text
-    if sub_sub_topic:
-        await user.update(sub_sub_topic=sub_sub_topic).apply()
-    else:
-        await user.update(sub_sub_topic=None).apply()
+    await services.base.set_data_to_db(user, sub_sub_topic=sub_sub_topic)
 
     exercises = await wrapper.exercises()
     markup = markups.exercises(exercises)
@@ -227,8 +214,7 @@ async def exercise(
 
     next_state = UserStates.Exercise
     await next_state.set()
-    keyboard[next_state.state] = markup.to_python()
-    await state.update_data(Keyboard=keyboard)
+    await services.user.set_next_state_markup(next_state, keyboard, markup, state)
 
 
 @dp.message_handler(state=UserStates.Exercise)
@@ -240,32 +226,12 @@ async def solution(
     state: FSMContext,
 ):
     exercise = message.text
-    await user.update(exercise=exercise).apply()
+    await services.base.set_data_to_db(user, exercise=exercise)
 
     solution = await wrapper.solution()
     solution_id = int(solution[0])
     solution_url = solution[1]
-    photo = await Photo.get(solution_id)
 
-    if not photo:
-        img = await httpx_worker.get(solution_url)
-        img_content = img.content
-        img_filename = img.url.path.split("/")[-1]
-
-        try:
-            img_id = (await message.answer_photo(img_content)).photo[-1].file_id
-        except PhotoDimensions as e:
-            img_id = (
-                await message.answer_document(
-                    types.InputFile(BytesIO(img_content), filename=img_filename)
-                )
-            ).document.file_id
-            img_id = config.PREFIX_WRONG_PHOTO_SIZE + img_id
-
-        photo = await Photo.create(id=solution_id, photo_id=img_id)
-    else:
-        img_id = photo.photo_id
-        if img_id.startswith(config.PREFIX_WRONG_PHOTO_SIZE):
-            await message.answer_document(img_id[len(config.PREFIX_WRONG_PHOTO_SIZE) :])
-        else:
-            await message.answer_photo(img_id)
+    await services.user.send_solution_and_save_to_db(
+        solution_id, solution_url, message, Photo, httpx_worker
+    )

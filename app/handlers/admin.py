@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, UserDeactivated
 
-from app import config
+from app import config, services
 from app.misc import bot, dp
 from app.models.user import User
 from app.utils import helper, markups
@@ -26,8 +26,8 @@ async def preview_message_send_all(message: types.Message, state: FSMContext):
 
 Отправить?
 """
+    await services.admin.set_sending_text(message.html_text, state)
     await message.answer(text, parse_mode="html", reply_markup=markup)
-    await state.update_data(Input_send_all=message.html_text)
     await AdminStates.Confirm_send_all.set()
 
 
@@ -38,22 +38,11 @@ async def preview_message_send_all(message: types.Message, state: FSMContext):
 )
 async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
-    await query.message.edit_reply_markup()
-    users = await User.select("user_id").gino.all()
-    data = await state.get_data()
-    text = data.get("Input_send_all")
-    count = 0
+    await query.message.delete_reply_markup()
 
-    for user in users:
-        try:
-            await bot.send_message(user[0], text, parse_mode="html")
-        except (BotBlocked, ChatNotFound, UserDeactivated) as e:
-            print(e)
-        else:
-            count += 1
-            await asyncio.sleep(0.05)
-
-    await query.message.answer(config.MSG_SUCCESFUL_SEND_ALL.format(count))
+    sending_text = await services.admin.get_sending_text(state)
+    count_alive_users = await services.admin.send_all(bot, sending_text, User)
+    await query.message.answer(config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users))
 
 
 @dp.callback_query_handler(
@@ -63,7 +52,7 @@ async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
 )
 async def send_all_no(query: types.CallbackQuery, state: FSMContext):
     await query.answer(text=config.MSG_DONT_WANNA)
-    await query.message.edit_reply_markup()
+    await query.message.delete_reply_markup()
 
 
 # end send_all command }}}
@@ -83,41 +72,26 @@ async def block_confirm(message: types.Message, state: FSMContext):
         return
     user_id = int(user_id)
 
-    try:
-        removed_message = await bot.send_message(
-            user_id, "test", disable_notification=True
+    is_blocked = await services.admin.is_user_blocked(user_id, User)
+    if is_blocked:
+        msg = f"{helper.get_user_link(user_id, 'Этот')} юзер и так забанен. Желаете его разбанить?"
+        await message.answer(
+            msg, reply_markup=markups.confirm_unblock(), parse_mode="markdown"
         )
-    except BotBlocked:
-        msg = "Этот юзер заблочил бота, гадёныш"
-        excepted = True
-    except UserDeactivated:
-        msg = "Этого юзера уже нету в ТГ, банить и не нужно :)"
-        excepted = True
-    except ChatNotFound:
-        msg = "Чат не найден, либо ты указал неверный айди, либо чел выпилился из ТГ :)"
-        excepted = True
+        await services.admin.set_unblocking_user_id(user_id, state)
+        await AdminStates.Confirm_unblock.set()
     else:
-        is_blocked = (await User.get(user_id)).is_blocked
-        if is_blocked:
-            msg = f"{helper.get_user_link(user_id, 'Этот')} юзер и так забанен. Желаете его разбанить?"
-            await state.update_data(Input_unblock=user_id)
-            await AdminStates.Confirm_unblock.set()
-            return await message.answer(
-                msg, reply_markup=markups.confirm_unblock(), parse_mode="markdown"
-            )
-        else:
-            msg = f"Вы уверены, что хотите забанить {helper.get_user_link(user_id)}?"
-            excepted = False
-        await removed_message.delete()
+        error = await services.admin.check_user_alive(bot, user_id)
 
-    if not excepted:
+        if error:
+            return await message.answer(error)
+
+        msg = f"Вы уверены, что хотите забанить {helper.get_user_link(user_id)}?"
         await message.answer(
             msg, reply_markup=markups.confirm_block(), parse_mode="markdown"
         )
-        await state.update_data(Input_block=user_id)
+        await services.admin.set_blocking_user_id(user_id, state)
         await AdminStates.Confirm_block.set()
-    else:
-        await message.answer(msg)
 
 
 @dp.callback_query_handler(
@@ -128,11 +102,8 @@ async def block_confirm(message: types.Message, state: FSMContext):
 async def block_yes(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
-    data = await state.get_data()
-    user_id = data.get("Input_block")
-
-    user = await User.get(user_id)
-    await user.update(is_blocked=True).apply()
+    blocking_user_id = await services.admin.get_blocking_user_id(state)
+    await services.admin.block_user(blocking_user_id, User)
 
     await query.message.delete_reply_markup()
     await query.message.answer("Вы успешно забанили этого юзера")
@@ -146,11 +117,8 @@ async def block_yes(query: types.CallbackQuery, state: FSMContext):
 async def unblock_yes(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
 
-    data = await state.get_data()
-    user_id = data.get("Input_unblock")
-
-    user = await User.get(user_id)
-    await user.update(is_blocked=False).apply()
+    unblocking_user_id = await services.admin.get_unblocking_user_id(state)
+    await services.admin.unblock_user(unblocking_user_id, User)
 
     await query.message.delete_reply_markup()
     await query.message.answer("Вы успешно разбанили этого юзера")
@@ -163,7 +131,7 @@ async def unblock_yes(query: types.CallbackQuery, state: FSMContext):
 )
 async def block_unblock_no(query: types.CallbackQuery, state: FSMContext):
     await query.answer(text=config.MSG_DONT_WANNA)
-    await query.message.edit_reply_markup()
+    await query.message.delete_reply_markup()
 
 
 # block }}}

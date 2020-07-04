@@ -365,3 +365,18 @@ class WrapperForBot(Wrapper):
         solution_url = await super().solution()
         solution_id = self.solution_id
         return solution_id, solution_url
+
+
+async def create_wrapper_for_bot(
+    user: User, state: FSMContext, **kwargs
+) -> WrapperForBot:
+    """
+    A factory used for asynchronous initializing
+
+    :returns:   WrapperForBot instance
+    """
+
+    wrapper_for_bot = WrapperForBot(user, state, **kwargs)
+    await wrapper_for_bot._init()
+
+    return wrapper_for_bot

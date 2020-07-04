@@ -7,7 +7,7 @@ from typing import Any
 
 from aiogram.dispatcher import FSMContext
 
-from app.models.db import db
+from app.models.db import BaseModel
 
 
 async def set_state_data(state: FSMContext, **state_data) -> None:
@@ -23,7 +23,7 @@ async def set_state_data(state: FSMContext, **state_data) -> None:
     await state.update_data(**state_data)
 
 
-async def set_data_to_db(model: db.Model, **data):
+async def set_data_to_db(model: BaseModel, **data):
     """
     Set data to db through the model
 
@@ -36,7 +36,7 @@ async def set_data_to_db(model: db.Model, **data):
     await model.update(**data).apply()
 
 
-async def get_model_obj_from_db_by_id(model: db.Model, id: Any):
+async def get_model_obj_from_db_by_id(model: BaseModel, id: Any):
     """
     Get model object from db by id
     Used for getting solution (photo) object

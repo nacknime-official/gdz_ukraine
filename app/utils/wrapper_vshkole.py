@@ -1,4 +1,5 @@
 import httpx
+from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
 from app.utils.httpx import httpx_worker
@@ -285,10 +286,23 @@ class Wrapper:
 
 
 class WrapperForBot(Wrapper):
-    def __init__(self, user: User, **kwargs):
+    def __init__(self, user: User, state: FSMContext, **kwargs):
         self._user = user
+        self._state = state
+
         self._client = httpx_worker
         super().__init__(**kwargs)
+
+    async def _init(self):
+        """
+        Async __init__ as fabric method
+        Sets reusable data for getting that in the next steps
+        """
+
+        state_data = await self._state.get_data()
+        self._subjects = state_data.get("Wrapper_subjects")
+        self._subject_entities = state_data.get("Wrapper_subject_entities")
+        self._entities = state_data.get("Wrapper_entities")
 
     async def subjects(self):
         self.grade = self._user.grade

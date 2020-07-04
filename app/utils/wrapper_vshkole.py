@@ -1,6 +1,8 @@
 import httpx
+from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
+from app.services import base
 from app.utils.httpx import httpx_worker
 
 grades = {
@@ -285,21 +287,37 @@ class Wrapper:
 
 
 class WrapperForBot(Wrapper):
-    def __init__(self, user: User, **kwargs):
+    def __init__(self, user: User, state: FSMContext, **kwargs):
         self._user = user
+        self._state = state
+
         self._client = httpx_worker
         super().__init__(**kwargs)
 
+    async def _init(self):
+        """
+        Async __init__ as fabric method
+        Sets reusable data for getting that in the next steps
+        """
+
+        state_data = await self._state.get_data()
+        self._subjects = state_data.get("Wrapper_subjects")
+        self._subject_entities = state_data.get("Wrapper_subject_entities")
+        self._entities = state_data.get("Wrapper_entities")
+
     async def subjects(self):
         self.grade = self._user.grade
-        return await super().subjects()
+        subjects = await super().subjects()
+        await base.set_state_data(self._state, Wrapper_subjects=subjects)
+        return subjects
 
     async def authors(self):
         self.grade = self._user.grade
         self.subject = self._user.subject
         authors = await super().authors()
         entities = self._subject_entities
-        return authors, entities
+        await base.set_state_data(self._state, Wrapper_subject_entities=entities)
+        return authors
 
     async def specifications(self):
         self.author = self._user.author
@@ -318,7 +336,8 @@ class WrapperForBot(Wrapper):
         self.year = self._user.year
         main_topics = await super().main_topics()
         entities = self._entities
-        return main_topics, entities
+        await base.set_state_data(self._state, Wrapper_entities=entities)
+        return main_topics
 
     async def sub_topics(self):
         self.main_topic = self._user.main_topic
@@ -346,3 +365,18 @@ class WrapperForBot(Wrapper):
         solution_url = await super().solution()
         solution_id = self.solution_id
         return solution_id, solution_url
+
+
+async def create_wrapper_for_bot(
+    user: User, state: FSMContext, **kwargs
+) -> WrapperForBot:
+    """
+    A factory used for asynchronous initializing
+
+    :returns:   WrapperForBot instance
+    """
+
+    wrapper_for_bot = WrapperForBot(user, state, **kwargs)
+    await wrapper_for_bot._init()
+
+    return wrapper_for_bot

@@ -3,27 +3,15 @@ from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
-from app.utils.wrapper_vshkole import WrapperForBot
+from app.utils.wrapper_vshkole import WrapperForBot, create_wrapper_for_bot
 
 
 class WrapperMiddleware(BaseMiddleware):
     async def setup_wrapper(
-        self,
-        data: dict,
-        command,
-        user: User,
-        wrapper_subjects,
-        wrapper_subject_entities,
-        wrapper_entities,
-        keyboard: dict,
+        self, data: dict, command, user: User, state: FSMContext, keyboard: dict,
     ):
         if command is None or (command is not None and command.command != "start"):
-            w = WrapperForBot(
-                user,
-                subjects=wrapper_subjects,
-                subject_entities=wrapper_subject_entities,
-                entities=wrapper_entities,
-            )
+            w = await create_wrapper_for_bot(user, state)
             data["wrapper"] = w
             data["keyboard"] = keyboard
 
@@ -33,16 +21,7 @@ class WrapperMiddleware(BaseMiddleware):
 
         state: FSMContext = data.get("state")
         state_data = await state.get_data()
-        wrapper_subjects = state_data.get("Wrapper_subjects")
-        wrapper_subject_entities = state_data.get("Wrapper_subject_entities")
-        wrapper_entities = state_data.get("Wrapper_entities")
         keyboard: dict = state_data.get("Keyboard")
         await self.setup_wrapper(
-            data,
-            command,
-            user,
-            wrapper_subjects,
-            wrapper_subject_entities,
-            wrapper_entities,
-            keyboard,
+            data, command, user, state, keyboard,
         )

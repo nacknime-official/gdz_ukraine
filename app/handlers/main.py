@@ -56,7 +56,6 @@ async def subject(
     next_state = UserStates.Subject
     await next_state.set()
     await services.user.set_next_state_markup(next_state, keyboard, markup, state)
-    await services.base.set_state_data(state, Wrapper_subjects=subjects)
 
 
 @dp.message_handler(state=UserStates.Subject)
@@ -70,14 +69,13 @@ async def author(
     subject = message.text
     await services.base.set_data_to_db(user, subject=subject)
 
-    authors, entities = await wrapper.authors()
+    authors = await wrapper.authors()
     markup = markups.authors(authors)
     await message.answer(config.MSG_AUTHOR, reply_markup=markup)
 
     next_state = UserStates.Author
     await next_state.set()
     await services.user.set_next_state_markup(next_state, keyboard, markup, state)
-    await services.base.set_state_data(state, Wrapper_subject_entities=entities)
 
 
 @dp.message_handler(state=UserStates.Author)
@@ -137,14 +135,13 @@ async def main_topic(
         year = int(message.text)
     await services.base.set_data_to_db(user, year=year)
 
-    main_topics, entities = await wrapper.main_topics()
+    main_topics = await wrapper.main_topics()
     markup = markups.main_topics(main_topics)
     await message.answer(config.MSG_MAIN_TOPIC, reply_markup=markup)
 
     next_state = UserStates.Main_topic
     await next_state.set()
     await services.user.set_next_state_markup(next_state, keyboard, markup, state)
-    await services.base.set_state_data(state, Wrapper_entities=entities)
 
 
 @dp.message_handler(state=UserStates.Main_topic)

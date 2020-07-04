@@ -2,6 +2,7 @@ import httpx
 from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
+from app.services import base
 from app.utils.httpx import httpx_worker
 
 grades = {
@@ -306,14 +307,17 @@ class WrapperForBot(Wrapper):
 
     async def subjects(self):
         self.grade = self._user.grade
-        return await super().subjects()
+        subjects = await super().subjects()
+        await base.set_state_data(self._state, Wrapper_subjects=subjects)
+        return subjects
 
     async def authors(self):
         self.grade = self._user.grade
         self.subject = self._user.subject
         authors = await super().authors()
         entities = self._subject_entities
-        return authors, entities
+        await base.set_state_data(self._state, Wrapper_subject_entities=entities)
+        return authors
 
     async def specifications(self):
         self.author = self._user.author
@@ -332,7 +336,8 @@ class WrapperForBot(Wrapper):
         self.year = self._user.year
         main_topics = await super().main_topics()
         entities = self._entities
-        return main_topics, entities
+        await base.set_state_data(self._state, Wrapper_entities=entities)
+        return main_topics
 
     async def sub_topics(self):
         self.main_topic = self._user.main_topic

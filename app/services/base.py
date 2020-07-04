@@ -3,6 +3,8 @@ Base logic module
 Not specialize in a specific user
 """
 
+from typing import Any
+
 from aiogram.dispatcher import FSMContext
 
 from app.models.db import db
@@ -32,3 +34,17 @@ async def set_data_to_db(model: db.Model, **data):
     """
 
     await model.update(**data).apply()
+
+
+async def get_model_obj_from_db_by_id(model: db.Model, id: Any):
+    """
+    Get model object from db by id
+    Used for getting solution (photo) object
+
+    :param model:   model that contains `id` column
+    :param id:      used fot getting object by id
+
+    :returns:       model object
+    """
+
+    return await model.get(id)

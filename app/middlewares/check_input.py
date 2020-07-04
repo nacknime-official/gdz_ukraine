@@ -15,7 +15,7 @@ class Checker(BaseMiddleware):
         keyboard: types.ReplyKeyboardMarkup = types.ReplyKeyboardMarkup.to_object(
             keyboard
         )
-        buttons = [j for i in keyboard.keyboard for j in i]
+        buttons = [j.strip() for i in keyboard.keyboard for j in i]
         text = message.text
 
         if text[-1] == "…":

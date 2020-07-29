@@ -296,7 +296,7 @@ class WrapperForBot(Wrapper):
 
     async def _init(self):
         """
-        Async __init__ as fabric method
+        Async __init__ as factory method
         Sets reusable data for getting that in the next steps
         """
 

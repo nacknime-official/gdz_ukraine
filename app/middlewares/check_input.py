@@ -11,9 +11,9 @@ class Checker(BaseMiddleware):
     async def check(self, message: types.Message, state: FSMContext):
         data = await state.get_data()
         current_state = await state.get_state()
-        keyboard: dict = data.get("Keyboard").get(current_state)
+        raw_keyboard: dict = data.get("Keyboard").get(current_state)
         keyboard: types.ReplyKeyboardMarkup = types.ReplyKeyboardMarkup.to_object(
-            keyboard
+            raw_keyboard
         )
         buttons = [j.strip() for i in keyboard.keyboard for j in i]
         text = message.text

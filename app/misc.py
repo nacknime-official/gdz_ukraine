@@ -5,7 +5,9 @@ from aiogram.utils.executor import Executor
 from app import config
 
 bot = Bot(config.TELEGRAM_TOKEN)
-storage = RedisStorage2()
+storage = RedisStorage2(
+    host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB_FSM
+)
 dp = Dispatcher(bot, storage=storage)
 runner = Executor(dp)
 

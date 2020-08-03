@@ -20,7 +20,7 @@ class WrapperMiddleware(BaseMiddleware):
         user = data.get("user")
 
         state: FSMContext = data.get("state")
-        state_data = await state.get_data()
+        state_data: dict = await state.get_data()
         keyboard: dict = state_data.get("Keyboard")
         await self.setup_wrapper(
             data, command, user, state, keyboard,

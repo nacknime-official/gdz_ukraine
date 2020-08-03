@@ -1,3 +1,5 @@
+import typing
+
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -8,14 +10,14 @@ from aiogram.types import (
 from app import config
 
 
-def classes():
+def classes() -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
-    buttons = [str(i) for i in range(1, 11 + 1)]
+    buttons: typing.List[str] = [str(i) for i in range(1, 11 + 1)]
     markup.add(*buttons)
     return markup
 
 
-def subjects(subjects):
+def subjects(subjects: typing.List[str]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -23,7 +25,7 @@ def subjects(subjects):
     return markup
 
 
-def authors(authors):
+def authors(authors: typing.List[str]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -31,7 +33,7 @@ def authors(authors):
     return markup
 
 
-def specifications(specifications):
+def specifications(specifications: typing.List[str]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -39,7 +41,7 @@ def specifications(specifications):
     return markup
 
 
-def years(years):
+def years(years: typing.List[typing.Union[str, int]]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -47,7 +49,7 @@ def years(years):
     return markup
 
 
-def main_topics(main_topics):
+def main_topics(main_topics: typing.List[str]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -55,7 +57,7 @@ def main_topics(main_topics):
     return markup
 
 
-def sub_topics(sub_topics):
+def sub_topics(sub_topics: typing.List[str]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -63,7 +65,7 @@ def sub_topics(sub_topics):
     return markup
 
 
-def sub_sub_topics(sub_sub_topics):
+def sub_sub_topics(sub_sub_topics: typing.List[str]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -71,7 +73,7 @@ def sub_sub_topics(sub_sub_topics):
     return markup
 
 
-def exercises(exercises):
+def exercises(exercises: typing.List[str]) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     markup.add("Главное меню")
     markup.add("Назад")
@@ -79,21 +81,21 @@ def exercises(exercises):
     return markup
 
 
-def confirm_send_all():
+def confirm_send_all() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("Да", callback_data=config.CB_SEND_ALL_YES))
     markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_SEND_ALL_NO))
     return markup
 
 
-def confirm_block():
+def confirm_block() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("Да", callback_data=config.CB_BLOCK_YES))
     markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_BLOCK_NO))
     return markup
 
 
-def confirm_unblock():
+def confirm_unblock() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("Да", callback_data=config.CB_UNBLOCK_YES))
     markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_UNBLOCK_NO))

@@ -41,6 +41,7 @@ async def send_message_catching_errors(
     :returns:       types.Message obj and an error
     """
 
+    message = None
     error = ""
 
     try:

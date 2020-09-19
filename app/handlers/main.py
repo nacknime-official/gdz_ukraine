@@ -37,7 +37,7 @@ async def back(
 @dp.message_handler(text="Главное меню", state="*")
 @dp.message_handler(commands="start", state="*")
 async def cmd_start(message: types.Message, user: User, state: FSMContext):
-    markup = markups.classes()
+    await state.reset_data()
     await message.answer(config.MSG_START, reply_markup=markup)
 
     keyboard: dict = {}

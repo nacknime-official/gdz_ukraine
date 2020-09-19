@@ -8,7 +8,7 @@ class UserStates(StatesGroup):
     Subject = State()
     Author = State()
     Specification = State()
-    Years = State()
+    Year = State()
     Main_topic = State()
     Sub_topic = State()
     Sub_sub_topic = State()
@@ -37,7 +37,7 @@ quiz = [
     UserStates.Subject.state,
     UserStates.Author.state,
     UserStates.Specification.state,
-    UserStates.Years.state,
+    UserStates.Year.state,
     UserStates.Main_topic.state,
     UserStates.Sub_topic.state,
     UserStates.Sub_sub_topic.state,
@@ -49,7 +49,7 @@ state_messages = {
     UserStates.Subject.state: config.MSG_SUBJECT,
     UserStates.Author.state: config.MSG_AUTHOR,
     UserStates.Specification.state: config.MSG_SPECIFICATION,
-    UserStates.Years.state: config.MSG_YEARS,
+    UserStates.Year.state: config.MSG_YEAR,
     UserStates.Main_topic.state: config.MSG_MAIN_TOPIC,
     UserStates.Sub_topic.state: config.MSG_SUB_TOPIC,
     UserStates.Sub_sub_topic.state: config.MSG_SUB_SUB_TOPIC,

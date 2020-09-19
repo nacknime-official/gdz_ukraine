@@ -110,10 +110,10 @@ async def years(
     await services.base.set_data_to_db(user, specification=specification)
 
     years = await wrapper.years()
-    next_state = UserStates.Years
+    next_state = UserStates.Year
     if len(years) >= 2:
         markup = markups.years(years)
-        await message.answer(config.MSG_YEARS, reply_markup=markup)
+        await message.answer(config.MSG_YEAR, reply_markup=markup)
         await next_state.set()
         await services.user.set_next_state_markup(next_state, keyboard, markup, state)
     else:
@@ -122,7 +122,7 @@ async def years(
         await main_topic(message, user, wrapper, keyboard, state)
 
 
-@dp.message_handler(state=UserStates.Years)
+@dp.message_handler(state=UserStates.Year)
 async def main_topic(
     message: types.Message,
     user: User,

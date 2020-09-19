@@ -1,8 +1,11 @@
+from typing import List
+
 import httpx
 from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
 from app.services import base
+from app.utils.helper import name_func
 from app.utils.httpx import httpx_worker
 
 grades = {
@@ -18,6 +21,13 @@ grades = {
     "10": 6,
     "11": 7,
 }
+
+data_funcs: List[name_func] = []
+
+
+def register_data_func(f):
+    data_funcs.append(name_func(f.__name__, f))
+    return f
 
 
 class Wrapper:
@@ -305,13 +315,21 @@ class WrapperForBot(Wrapper):
         self._subject_entities = state_data.get("Wrapper_subject_entities")
         self._entities = state_data.get("Wrapper_entities")
 
-    async def subjects(self):
+    @register_data_func
+    async def subjects(self, delete_data=False):
+        if delete_data:
+            return await base.set_state_data(self._state, Wrapper_subjects=None)
+
         self.grade = self._user.grade
         subjects = await super().subjects()
         await base.set_state_data(self._state, Wrapper_subjects=subjects)
         return subjects
 
-    async def authors(self):
+    @register_data_func
+    async def authors(self, delete_data=False):
+        if delete_data:
+            return await base.set_state_data(self._state, Wrapper_subject_entities=None)
+
         self.grade = self._user.grade
         self.subject = self._user.subject
         authors = await super().authors()
@@ -319,18 +337,24 @@ class WrapperForBot(Wrapper):
         await base.set_state_data(self._state, Wrapper_subject_entities=entities)
         return authors
 
-    async def specifications(self):
+    @register_data_func
+    async def specifications(self, **kwargs):
         self.author = self._user.author
         specifications = await super().specifications()
         return specifications
 
-    async def years(self):
+    @register_data_func
+    async def years(self, **kwargs):
         self.author = self._user.author
         self.specification = self._user.specification
         years = await super().years()
         return years
 
-    async def main_topics(self):
+    @register_data_func
+    async def main_topics(self, delete_data=False):
+        if delete_data:
+            return await base.set_state_data(self._state, Wrapper_entities=None)
+
         self.author = self._user.author
         self.specification = self._user.specification
         self.year = self._user.year
@@ -339,25 +363,29 @@ class WrapperForBot(Wrapper):
         await base.set_state_data(self._state, Wrapper_entities=entities)
         return main_topics
 
-    async def sub_topics(self):
+    @register_data_func
+    async def sub_topics(self, **kwargs):
         self.main_topic = self._user.main_topic
         sub_topics = await super().sub_topics()
         return sub_topics
 
-    async def sub_sub_topics(self):
+    @register_data_func
+    async def sub_sub_topics(self, **kwargs):
         self.main_topic = self._user.main_topic
         self.sub_topic = self._user.sub_topic
         sub_sub_topics = await super().sub_sub_topics()
         return sub_sub_topics
 
-    async def exercises(self):
+    @register_data_func
+    async def exercises(self, **kwargs):
         self.main_topic = self._user.main_topic
         self.sub_topic = self._user.sub_topic
         self.sub_sub_topic = self._user.sub_sub_topic
         exercises = await super().exercises()
         return exercises
 
-    async def solution(self):
+    @register_data_func
+    async def solution(self, **kwargs):
         self.main_topic = self._user.main_topic
         self.sub_topic = self._user.sub_topic
         self.sub_sub_topic = self._user.sub_sub_topic

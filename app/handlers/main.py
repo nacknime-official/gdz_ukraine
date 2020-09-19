@@ -7,16 +7,26 @@ from app.misc import dp
 from app.models.photo import Photo
 from app.models.user import User
 from app.utils import markups
+from app.utils.helper import find_func_by_state_name
 from app.utils.httpx import httpx_worker
 from app.utils.states import UserStates, quiz, state_messages
-from app.utils.wrapper_vshkole import WrapperForBot
+from app.utils.wrapper_vshkole import WrapperForBot, data_funcs
 
 
 @dp.message_handler(text="Назад", state=quiz)
-async def back(message: types.Message, user: User, keyboard: dict, state: FSMContext):
+async def back(
+    message: types.Message,
+    user: User,
+    wrapper: WrapperForBot,
+    keyboard: dict,
+    state: FSMContext,
+):
     await services.user.clean_current_state_markup(
         await state.get_state(), keyboard, state
     )
+
+    wrapper_func = find_func_by_state_name(await state.get_state(), data_funcs)
+    await wrapper_func(wrapper, delete_data=True)
 
     prev_msg, prev_markup = await services.user.get_previous_message_and_markup(
         UserStates, keyboard, state_messages

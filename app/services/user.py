@@ -13,7 +13,9 @@ from aiogram.utils.exceptions import PhotoDimensions
 
 from app import config
 from app.models.photo import Photo
+from app.utils.helper import find_func_by_state_name
 from app.utils.httpx import HttpxWorker
+from app.utils.markups import NAVIGATION_BUTTONS, markups_list
 from app.utils.states import UserStates
 
 from . import base
@@ -38,12 +40,14 @@ async def get_previous_message_and_markup(
     prev_msg = None
     while not prev_msg:
         prev_state = await user_states.previous()
-        prev_markup = keyboard.get(prev_state)
+        prev_markup_data = keyboard.get(prev_state)
 
-        if prev_markup is None:
+        if prev_markup_data is None:
             continue
         else:
             prev_msg = state_messages[prev_state]
+
+    prev_markup = find_func_by_state_name(prev_state, markups_list)(prev_markup_data)
 
     return prev_msg, prev_markup
 
@@ -66,7 +70,9 @@ async def set_next_state_markup(
     :returns:           None
     """
 
-    keyboard[next_state.state] = set_markup.to_python()
+    keyboard[next_state.state] = [
+        j.strip() for i in set_markup.keyboard for j in i if j not in NAVIGATION_BUTTONS
+    ]
     await base.set_state_data(state, Keyboard=keyboard)
 
 

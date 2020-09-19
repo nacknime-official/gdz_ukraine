@@ -1,9 +1,12 @@
+from typing import List
+
 from aiogram import types
 from aiogram.dispatcher.handler import CancelHandler
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.dispatcher.storage import FSMContext
 
 from app import config
+from app.utils.markups import NAVIGATION_BUTTONS
 from app.utils.states import quiz
 
 
@@ -11,11 +14,8 @@ class Checker(BaseMiddleware):
     async def check(self, message: types.Message, state: FSMContext):
         data = await state.get_data()
         current_state = await state.get_state()
-        raw_keyboard: dict = data.get("Keyboard").get(current_state)
-        keyboard: types.ReplyKeyboardMarkup = types.ReplyKeyboardMarkup.to_object(
-            raw_keyboard
-        )
-        buttons = [j.strip() for i in keyboard.keyboard for j in i]
+        buttons: List[str] = data.get("Keyboard").get(current_state)
+        buttons += NAVIGATION_BUTTONS
         text = message.text
 
         if text[-1] == "…":

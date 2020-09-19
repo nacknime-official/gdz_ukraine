@@ -1,3 +1,5 @@
+import inspect
+import sys
 import typing
 
 from aiogram.types import (
@@ -8,9 +10,11 @@ from aiogram.types import (
 )
 
 from app import config
+from app.utils.helper import name_func
 
+NAVIGATION_BUTTONS = ("Главное меню", "Назад")
 
-def classes() -> ReplyKeyboardMarkup:
+def classes(*args) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     buttons: typing.List[str] = [str(i) for i in range(1, 11 + 1)]
     markup.add(*buttons)
@@ -100,3 +104,9 @@ def confirm_unblock() -> InlineKeyboardMarkup:
     markup.add(InlineKeyboardButton("Да", callback_data=config.CB_UNBLOCK_YES))
     markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_UNBLOCK_NO))
     return markup
+
+
+markups_list: typing.List[name_func] = [
+    name_func(name, func)
+    for name, func in inspect.getmembers(sys.modules[__name__], inspect.isfunction)
+]

@@ -14,6 +14,10 @@ from app.utils.wrapper_vshkole import WrapperForBot
 
 @dp.message_handler(text="Назад", state=quiz)
 async def back(message: types.Message, user: User, keyboard: dict, state: FSMContext):
+    await services.user.clean_current_state_markup(
+        await state.get_state(), keyboard, state
+    )
+
     prev_msg, prev_markup = await services.user.get_previous_message_and_markup(
         UserStates, keyboard, state_messages
     )

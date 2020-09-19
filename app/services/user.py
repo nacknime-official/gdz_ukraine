@@ -76,6 +76,24 @@ async def set_next_state_markup(
     await base.set_state_data(state, Keyboard=keyboard)
 
 
+async def clean_current_state_markup(
+    current_state: str, keyboard: dict, state: FSMContext,
+) -> None:
+    """
+    Clean a markup of the user's current state data (concrete - `keyboard` dictionary)
+    Used for `back` feature and optimize usage of memory
+
+    :param current_state:   current user's state
+    :param keyboard:        contains all markups
+    :param state:           user's state obj
+
+    :returns:               None
+    """
+
+    del keyboard[current_state]
+    await base.set_state_data(state, Keyboard=keyboard)
+
+
 async def send_solution_and_save_to_db(
     solution_id: int,
     solution_url: str,

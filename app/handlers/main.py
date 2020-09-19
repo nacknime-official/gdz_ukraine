@@ -39,7 +39,7 @@ async def back(
 async def cmd_start(message: types.Message, user: User, state: FSMContext):
     await state.reset_data()
 
-    markup = markups.classes()
+    markup = markups.grades()
     await message.answer(config.MSG_START, reply_markup=markup)
 
     keyboard: dict = {}

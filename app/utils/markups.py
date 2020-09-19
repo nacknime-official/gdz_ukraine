@@ -14,7 +14,8 @@ from app.utils.helper import name_func
 
 NAVIGATION_BUTTONS = ("Главное меню", "Назад")
 
-def classes(*args) -> ReplyKeyboardMarkup:
+
+def grades(*args) -> ReplyKeyboardMarkup:
     markup = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True)
     buttons: typing.List[str] = [str(i) for i in range(1, 11 + 1)]
     markup.add(*buttons)

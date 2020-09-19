@@ -246,3 +246,8 @@ async def solution(
     await services.user.send_solution_and_save_to_db(
         solution_id, solution_url, message, Photo, httpx_worker
     )
+
+
+@dp.message_handler(state="*")
+async def other_text(message: types.Message, user: User, state: FSMContext):
+    await message.answer("Что-то пошло не так... Тыкни на /start")

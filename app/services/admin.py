@@ -238,7 +238,7 @@ async def is_user_blocked(user_id: typing.Union[int, str], user_model: User) -> 
 
 async def check_user_alive(
     bot: Bot, user_id: typing.Union[int, str]
-) -> typing.Union[str, typing.Literal[False]]:
+) -> typing.Union[str]:
     """
     Check if the user hasn't blocked the bot, user is banned etc.
     or is the user alive

@@ -2,6 +2,8 @@
 # [@gdz_ukraine_bot](https://t.me/gdz_ukraine_bot)
 That's Open Source Telegram Bot, which show you a solution for your school homework!
 
+For now, it takes all solutions from [Vshkole](https://vshkole.com) and kind of ready to add other sources.
+
 ## Used libs:
 - [AIOGram](https://github.com/aiogram/aiogram) - async comfortable work with Telegram Bot API
 - [HTTPX](https://github.com/encode/httpx) - async requests

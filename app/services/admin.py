@@ -93,13 +93,17 @@ async def get_sending_text(state: FSMContext) -> str:
     return sending_text
 
 
-async def send_all(bot: Bot, sending_text: str, user_model: User) -> int:
+async def send_all(
+    bot: Bot, *, sending_text: typing.Optional[str] = None, user_model: User
+) -> int:
     """
     Sends the message for all users
     It's only admin's feature
 
     :param bot:             bot obj
     :param sending_text:    text that will be sent to the all users
+                            if there's no text, it's silent broadcast with
+                            deleting message for count alive users
     :param user_model:      user's model for getting all user's id
 
     :returns:               `count_alive_users` var
@@ -109,9 +113,12 @@ async def send_all(bot: Bot, sending_text: str, user_model: User) -> int:
     count_alive_users = 0
 
     for user_id in all_users_id:
-        message, error = await send_message_catching_errors(
-            bot, user_id[0], sending_text, parse_mode="html"
-        )
+        if sending_text:
+            message, error = await send_message_catching_errors(
+                bot, user_id[0], sending_text, parse_mode="html"
+            )
+        else:
+            error = await check_user_alive(bot, user_id[0])
         if not error:
             count_alive_users += 1
             await asyncio.sleep(0.05)

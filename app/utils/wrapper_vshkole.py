@@ -269,7 +269,7 @@ class Wrapper:
             )
         )[0]
         self.solution_id = solutions["id"]
-        return solutions["image_urls"]
+        return solutions["image_urls"][0]
 
     # init static methods
     @staticmethod
@@ -390,9 +390,9 @@ class WrapperForBot(Wrapper):
         self.sub_topic = self._user.sub_topic
         self.sub_sub_topic = self._user.sub_sub_topic
         self.exercise = self._user.exercise
-        solution_urls = await super().solution()
+        solution_url = await super().solution()
         solution_id = self.solution_id
-        return solution_id, solution_urls
+        return solution_id, solution_url
 
 
 async def create_wrapper_for_bot(

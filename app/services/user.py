@@ -12,7 +12,7 @@ from aiogram.dispatcher.filters.state import State
 from aiogram.utils.exceptions import PhotoDimensions
 
 from app import config
-from app.models.photo import Photo
+from app.models.photo import Photo, Solution
 from app.utils.helper import find_func_by_state_name
 from app.utils.httpx import HttpxWorker
 from app.utils.markups import NAVIGATION_BUTTONS, markups_list
@@ -98,6 +98,7 @@ async def send_solution_and_save_to_db(
     solution_id: int,
     solution_url: str,
     user_message: types.Message,
+    solution_model: Solution,
     photo_model: Photo,
     httpx_worker: HttpxWorker,
 ) -> None:
@@ -109,15 +110,32 @@ async def send_solution_and_save_to_db(
     :param solution_url:    solution's url
     :param user_message:    user's message, used for check image's
                             sizes and send the solution to the user
+    :param solution_model:  solution model obj
     :param photo_model:     photo model obj
     :param httpx_worker:    httpx obj, used for getting a solution from the solution url
 
     :returns:               None
     """
 
-    photo = await base.get_model_obj_from_db_by_id(photo_model, solution_id)
+    solution = await base.get_model_obj_from_db_by_id(solution_model, solution_id)
+    photos = (
+        await Photo.load(solution=Solution)
+        .query.where(Solution.id == solution_id)
+        .gino.all()
+    )
+    img_id = None
 
-    if not photo:
+    if photos:
+        if not (photo := photos[0]).url:
+            photo.update(url=solution_url).apply()
+            img_id = photo.photo_id
+        else:
+            for photo in photos:
+                if photo.url == solution_url:
+                    img_id = photo.photo_id
+                    break
+
+    if img_id is not None:
         img = await httpx_worker.get(solution_url)
         img_content = img.content
         img_filename = img.url.path.split("/")[-1]
@@ -132,9 +150,13 @@ async def send_solution_and_save_to_db(
             ).document.file_id
             img_id = config.PREFIX_WRONG_PHOTO_SIZE + img_id
 
-        photo = await photo_model.create(id=solution_id, photo_id=img_id)
+        if not solution:
+            await solution_model.create(id=solution_id)
+        await photo_model.create(
+            photo_id=img_id, url=solution_url, solution_id=solution_id
+        )
+
     else:
-        img_id = photo.photo_id
         if img_id.startswith(config.PREFIX_WRONG_PHOTO_SIZE):
             await user_message.answer_document(
                 img_id[len(config.PREFIX_WRONG_PHOTO_SIZE) :]

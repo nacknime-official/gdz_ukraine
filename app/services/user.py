@@ -127,7 +127,7 @@ async def send_solution_and_save_to_db(
 
     if photos:
         if not (photo := photos[0]).url:
-            photo.update(url=solution_url).apply()
+            await photo.update(url=solution_url).apply()
             img_id = photo.photo_id
         else:
             for photo in photos:

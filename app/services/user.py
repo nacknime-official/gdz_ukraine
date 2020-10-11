@@ -135,7 +135,7 @@ async def send_solution_and_save_to_db(
                     img_id = photo.photo_id
                     break
 
-    if img_id is not None:
+    if img_id is None:
         img = await httpx_worker.get(solution_url)
         img_content = img.content
         img_filename = img.url.path.split("/")[-1]

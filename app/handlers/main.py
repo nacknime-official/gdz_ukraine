@@ -4,7 +4,7 @@ from aiogram.utils.exceptions import PhotoDimensions
 
 from app import config, services
 from app.misc import dp
-from app.models.photo import Photo
+from app.models.photo import Photo, Solution
 from app.models.user import User
 from app.utils import markups
 from app.utils.helper import find_func_by_state_name
@@ -243,11 +243,12 @@ async def solution(
 
     solution = await wrapper.solution()
     solution_id = int(solution[0])
-    solution_url = solution[1]
+    solution_urls = solution[1]
 
-    await services.user.send_solution_and_save_to_db(
-        solution_id, solution_url, message, Photo, httpx_worker
-    )
+    for solution_url in solution_urls:
+        await services.user.send_solution_and_save_to_db(
+            solution_id, solution_url, message, Solution, Photo, httpx_worker
+        )
 
 
 @dp.message_handler(state="*")

@@ -2,6 +2,7 @@ import asyncio
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.types import ContentType
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, UserDeactivated
 
 from app import config, services
@@ -18,16 +19,18 @@ async def cmd_send_all(message: types.Message, state: FSMContext):
     await AdminStates.Input_send_all.set()
 
 
-@dp.message_handler(is_admin=True, state=AdminStates.Input_send_all)
+@dp.message_handler(
+    content_types=ContentType.ANY, is_admin=True, state=AdminStates.Input_send_all
+)
 async def preview_message_send_all(message: types.Message, state: FSMContext):
     markup = markups.confirm_send_all()
-    text = f"""
-{message.html_text}
 
-Отправить?
-"""
-    await services.admin.set_sending_text(message.html_text, state)
-    await message.answer(text, parse_mode="html", reply_markup=markup)
+    preview_sending_message = await message.copy_to(message.chat.id)
+    await services.admin.set_sending_message_id(
+        int(preview_sending_message.message_id), state
+    )
+
+    await message.answer("Отправить?", reply_markup=markup)
     await AdminStates.Confirm_send_all.set()
 
 
@@ -40,9 +43,12 @@ async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.delete_reply_markup()
 
-    sending_text = await services.admin.get_sending_text(state)
+    sending_message_id = await services.admin.get_sending_message_id(state)
+    sending_message = types.Message(
+        message_id=sending_message_id, chat=types.Chat(id=query.from_user.id)
+    )
     count_alive_users = await services.admin.send_all(
-        bot, sending_text=sending_text, user_model=User
+        sending_message=sending_message, user_model=User
     )
     await query.message.answer(config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users))
 
@@ -59,7 +65,7 @@ async def send_all_no(query: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(commands="count_alive_users", is_admin=True, state="*")
 async def cmd_count_alive_users(message: types.Message, state: FSMContext):
-    count_alive_users = await services.admin.send_all(bot, user_model=User)
+    count_alive_users = await services.admin.send_all(bot=bot, user_model=User)
     await message.answer(config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users))
 
 

@@ -16,20 +16,9 @@ from . import base
 
 
 async def send_message_catching_errors(
-    bot: Bot,
     chat_id: typing.Union[types.base.Integer, types.base.String],
-    text: types.base.String,
-    parse_mode: typing.Union[types.base.String, None] = None,
-    disable_web_page_preview: typing.Union[types.base.Boolean, None] = None,
-    disable_notification: typing.Union[types.base.Boolean, None] = None,
-    reply_to_message_id: typing.Union[types.base.Integer, None] = None,
-    reply_markup: typing.Union[
-        types.InlineKeyboardMarkup,
-        types.ReplyKeyboardMarkup,
-        types.ReplyKeyboardRemove,
-        types.ForceReply,
-        None,
-    ] = None,
+    message: types.Message,
+    bot: typing.Optional[Bot] = None,
 ) -> typing.Tuple[types.Message, str]:
     """
     Send a message catching errors e.g. BotBlocked, UserDeactivated, ChatNotFound etc.
@@ -41,69 +30,65 @@ async def send_message_catching_errors(
     :returns:       types.Message obj and an error
     """
 
-    message = None
     error = ""
 
     try:
-        message = await bot.send_message(
-            chat_id,
-            text,
-            parse_mode=parse_mode,
-            disable_web_page_preview=disable_web_page_preview,
-            disable_notification=disable_notification,
-            reply_to_message_id=reply_to_message_id,
-            reply_markup=reply_markup,
-        )
+        # if message is created by the code
+        if not message.message_id:
+            message = await bot.send_message(chat_id=chat_id, **message.to_python())
+        else:
+            await message.copy_to(chat_id)
     except BotBlocked:
-        error = "Этот юзер заблочил бота, гадёныш"
+        error = "Этот юзер заблочил бота"
     except UserDeactivated:
-        error = "Этого юзера уже нету в ТГ, банить и не нужно :)"
+        error = "Этого юзера уже нету в ТГ"
     except ChatNotFound:
-        error = (
-            "Чат не найден, либо ты указал неверный айди, либо чел выпилился из ТГ :)"
-        )
+        error = "Чат не найден, либо чел выпилился из ТГ"
 
     return message, error
 
 
-async def set_sending_text(sending_text: str, state: FSMContext) -> None:
+async def set_sending_message_id(message_id: int, state: FSMContext) -> None:
     """
-    Set sending text into admin's state data for getting that later in the next handler
+    Set sending message id into admin's state data for getting that later in the next handler
 
-    :param state:   admin's state obj in which we'll set sending text
+    :param state:   admin's state obj in which we'll set sending message id
 
     :returns:       None
     """
 
-    await base.set_state_data(state, Input_send_all=sending_text)
+    await base.set_state_data(state, Input_send_all=message_id)
 
 
-async def get_sending_text(state: FSMContext) -> str:
+async def get_sending_message_id(state: FSMContext) -> str:
     """
-    Get sending text to the all users from the admin's state obj
+    Get sending message id to the all users from the admin's state obj
 
-    :param state:   admin's state obj that contains sending text
+    :param state:   admin's state obj that contains sending message id
 
     :returns:       sending text
     """
 
     data = await state.get_data()
-    sending_text = data.get("Input_send_all")
+    sending_message_id = data.get("Input_send_all")
 
-    return sending_text
+    return sending_message_id
 
 
 async def send_all(
-    bot: Bot, *, sending_text: typing.Optional[str] = None, user_model: User
+    *,
+    sending_message: typing.Optional[types.Message] = None,
+    bot: typing.Optional[Bot] = None,
+    user_model: typing.Type[User]
 ) -> int:
     """
     Sends the message for all users
     It's only admin's feature
 
-    :param bot:             bot obj
-    :param sending_text:    text that will be sent to the all users
-                            if there's no text, it's silent broadcast with
+    :param message:         message that will be sent to the all users
+                            if there's no message, it's silent broadcast with
                             deleting message for count alive users
+    :param bot:             bot obj
     :param user_model:      user's model for getting all user's id
 
     :returns:               `count_alive_users` var
@@ -113,9 +98,9 @@ async def send_all(
     count_alive_users = 0
 
     for user_id in all_users_id:
-        if sending_text:
+        if sending_message:
             message, error = await send_message_catching_errors(
-                bot, user_id[0], sending_text, parse_mode="html"
+                user_id[0], sending_message, bot=bot
             )
         else:
             error = await check_user_alive(bot, user_id[0])
@@ -250,7 +235,7 @@ async def check_user_alive(
     """
 
     removed_message, error = await send_message_catching_errors(
-        bot, user_id, "test", disable_notification=True
+        user_id, types.Message(text="test", disable_notification=True), bot=bot
     )
     if not error:
         await removed_message.delete()

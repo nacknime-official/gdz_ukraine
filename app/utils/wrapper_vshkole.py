@@ -125,7 +125,7 @@ class Wrapper:
 
     @property
     def book_id(self):
-        if not self._book_id:
+        if self._book_id is None:
             for entity in self._subject_entities:
                 auth = self.lower_author(entity["authors"])
                 specification = entity["specification"]

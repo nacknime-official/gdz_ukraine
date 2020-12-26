@@ -301,8 +301,8 @@ class WrapperForBot(Wrapper):
         self._user = user
         self._state = state
 
-        self._client = httpx_worker
         super().__init__(**kwargs)
+        self._client = httpx_worker
 
     async def _init(self):
         """

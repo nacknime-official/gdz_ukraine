@@ -19,6 +19,9 @@ alembic = "*"
 python-dotenv = "*"
 gino = "*"
 psycopg2-binary = "*"
+uvloop = "*"
+ujson = "*"
+aiohttp = {extras = ["speedups"], version = "*"}
 
 [requires]
 python_version = "3.8"

@@ -183,7 +183,7 @@ async def block_user(user_id: typing.Union[int, str], user_model: User) -> User:
 
     user_id = int(user_id)
     user = await user_model.get(user_id)
-    await base.set_data_to_db(user_model, is_blocked=True)
+    await base.set_data_to_db(user, is_blocked=True)
 
     return user
 
@@ -200,7 +200,7 @@ async def unblock_user(user_id: typing.Union[int, str], user_model: User) -> Use
 
     user_id = int(user_id)
     user = await user_model.get(user_id)
-    await base.set_data_to_db(user_model, is_blocked=False)
+    await base.set_data_to_db(user, is_blocked=False)
 
     return user
 

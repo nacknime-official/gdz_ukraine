@@ -1,4 +1,4 @@
-from app.misc import runner, setup
+from app.utils.cli import cli
 
-setup()
-runner.start_polling()
+if __name__ == "__main__":
+    cli()

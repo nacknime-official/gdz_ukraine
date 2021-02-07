@@ -22,6 +22,7 @@ psycopg2-binary = "*"
 uvloop = "*"
 ujson = "*"
 aiohttp = {extras = ["speedups"], version = "*"}
+click = "*"
 
 [requires]
 python_version = "3.8"

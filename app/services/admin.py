@@ -10,6 +10,7 @@ from aiogram import Bot, types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, UserDeactivated
 
+from app import config
 from app.models.user import User
 
 from . import base
@@ -241,3 +242,18 @@ async def check_user_alive(
         await removed_message.delete()
 
     return error
+
+
+async def scheduled_count_alive_users(bot: Bot, user_model: typing.Type[User]):
+    """
+    Count alive users used with systemd or crontab
+    """
+
+    await bot.send_message(
+        config.ADMIN_ID, "Запланированная рассылка для подсчёта юзеров начата"
+    )
+
+    count_alive_users = await send_all(bot=bot, user_model=user_model)
+    await bot.send_message(
+        config.ADMIN_ID, config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users)
+    )

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -20,6 +21,7 @@ REDIS_PORT = os.getenv("REDIS_PORT", default="6379")
 REDIS_DB_FSM = os.getenv("REDIS_DB_FSM", default=0)
 
 PREFIX_WRONG_PHOTO_SIZE = "wrong_size_"
+WATERMARK_PATH = str(Path.cwd() / "static" / "watermark.png")
 
 # user messages
 MSG_START = "Выберите клас"

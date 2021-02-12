@@ -3,6 +3,7 @@ User logic module
 Specialize in user features
 """
 
+import asyncio
 from io import BytesIO
 from typing import Tuple, Type
 
@@ -10,6 +11,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State
 from aiogram.utils.exceptions import PhotoDimensions
+from PIL import Image
 
 from app import config
 from app.models.photo import Photo, Solution
@@ -94,6 +96,41 @@ async def clean_current_state_markup(
     await base.set_state_data(state, Keyboard=keyboard)
 
 
+def watermark_solution(solution: bytes, watermark_path: str) -> bytes:
+    """
+    Make a solution photo watermarked
+
+    :param solution:        solution photo as bytes
+    :param watermark_path:  a path to the watermark
+
+    :returns:               watermarked solution photo as bytes
+    """
+
+    solution_img: Image.Image = Image.open(BytesIO(solution))
+    watermark_img: Image.Image = Image.open(watermark_path)
+
+    watermark_img = watermark_img.rotate(15, expand=1)
+    mark_width, mark_height = watermark_img.size
+    sol_width, sol_height = solution_img.size
+    aspect_ratio = mark_width / mark_height
+    new_mark_width = sol_width * 0.25
+    watermark_img.thumbnail(
+        (new_mark_width, new_mark_width / aspect_ratio), Image.ANTIALIAS
+    )
+
+    for i in range(0, solution_img.width, watermark_img.width):
+        for j in range(0, solution_img.height, watermark_img.height):
+            solution_img.paste(
+                watermark_img,
+                (i, j),
+                mask=watermark_img,
+            )
+
+    buf = BytesIO()
+    solution_img.save(buf, solution_img.format)
+    return buf.getvalue()
+
+
 async def send_solution_and_save_to_db(
     solution_id: int,
     solution_url: str,
@@ -137,7 +174,11 @@ async def send_solution_and_save_to_db(
 
     if img_id is None:
         img = await httpx_worker.get(solution_url)
-        img_content = img.content
+        img_content = await (
+            asyncio.get_running_loop().run_in_executor(
+                None, watermark_solution, img.content, config.WATERMARK_PATH
+            )
+        )
         img_filename = img.url.path.split("/")[-1]
 
         try:

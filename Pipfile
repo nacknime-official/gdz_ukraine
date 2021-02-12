@@ -23,6 +23,7 @@ uvloop = "*"
 ujson = "*"
 aiohttp = {extras = ["speedups"], version = "*"}
 click = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.8"

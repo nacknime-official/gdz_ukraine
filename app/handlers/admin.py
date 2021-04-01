@@ -149,40 +149,37 @@ async def block_unblock_no(query: types.CallbackQuery):
 
 # notifications {{{
 @dp.message_handler(commands="toggle_notifs", is_admin=True, state="*")
-async def toggle_user_is_subscribed_to_notifications(message: types.Message, state: FSMContext):
+async def toggle_user_is_subscribed_to_notifications(
+    message: types.Message, state: FSMContext
+):
     user_id = message.text.split()[-1]
     if not user_id.isdigit():
         await message.answer("Это не айдишник юзера, попробуй ещё раз, но с числами")
         return
     user_id = int(user_id)
 
-    is_blocked = await services.admin.is_user_blocked(user_id, User)
-    if is_blocked:
-        msg = f"{helper.get_user_link(user_id, 'Этот')} юзер и так забанен. Желаете его разбанить?"
-        await message.answer(
-            msg, reply_markup=markups.confirm_unblock(), parse_mode="markdown"
-        )
-        await services.admin.set_unblocking_user_id(user_id, state)
-        await AdminStates.Confirm_unblock.set()
-    else:
-        error = await services.admin.check_user_alive(bot, user_id)
+    error = await services.admin.check_user_alive(bot, user_id)
 
-        if error:
-            return await message.answer(error)
+    if error:
+        return await message.answer(error)
 
-        is_subscribed_to_notifications = await services.admin.is_user_subscribed_to_notifications(
-            user_id=user_id, user_model=User,
-        )
-        toggle_service = (
-            services.admin.unsubscribe_user_to_notifications
-            if is_subscribed_to_notifications
-            else services.admin.subscribe_user_to_notifications
-        )
-        await toggle_service(
-            bot=bot,
+    is_subscribed_to_notifications = (
+        await services.admin.is_user_subscribed_to_notifications(
             user_id=user_id,
             user_model=User,
         )
+    )
+    toggle_service = (
+        services.admin.unsubscribe_user_to_notifications
+        if is_subscribed_to_notifications
+        else services.admin.subscribe_user_to_notifications
+    )
+    msg = await toggle_service(
+        bot=bot,
+        user_id=user_id,
+        user_model=User,
+    )
+    await message.answer(msg)
 
 
 @dp.message_handler(commands="send_notifs", is_admin=True, state="*")
@@ -222,7 +219,9 @@ async def send_notifs_yes(query: types.CallbackQuery, state: FSMContext):
     count_alive_users = await services.admin.send_notifs(
         sending_message=sending_message, user_model=User
     )
-    await query.message.answer(config.MSG_SUCCESFUL_SEND_NOTIFS.format(count_alive_users))
+    await query.message.answer(
+        config.MSG_SUCCESFUL_SEND_NOTIFS.format(count_alive_users)
+    )
 
 
 @dp.callback_query_handler(

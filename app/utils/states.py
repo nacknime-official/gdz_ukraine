@@ -25,6 +25,9 @@ class AdminStates(StatesGroup):
     Input_send_all = State()
     Confirm_send_all = State()
 
+    Input_send_notifs = State()
+    Confirm_send_notifs = State()
+
     Input_block = State()
     Confirm_block = State()
 

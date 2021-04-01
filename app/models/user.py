@@ -16,3 +16,4 @@ class User(TimedBaseModel):
     exercise = db.Column(db.String)
 
     is_blocked = db.Column(db.Boolean)
+    is_subscribed_to_notifications = db.Column(db.Boolean, default=True)

@@ -93,6 +93,13 @@ def confirm_send_all() -> InlineKeyboardMarkup:
     return markup
 
 
+def confirm_send_notifs() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("Да", callback_data=config.CB_SEND_NOTIFS_YES))
+    markup.add(InlineKeyboardButton("Нет", callback_data=config.CB_SEND_NOTIFS_NO))
+    return markup
+
+
 def confirm_block() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("Да", callback_data=config.CB_BLOCK_YES))

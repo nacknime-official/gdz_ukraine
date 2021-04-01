@@ -38,11 +38,15 @@ MSG_WRONG_INPUT = "Тыкни на кнопку внизу"
 # admin messages
 MSG_INPUT_SEND_ALL = "Введите текст для рассылки"
 MSG_SUCCESFUL_SEND_ALL = "Успешно отправлено {} юзерам"
+MSG_INPUT_SEND_NOTIFS = "Введите текст для рассылки"
+MSG_SUCCESFUL_SEND_NOTIFS = "Успешно отправлено {} юзерам"
 MSG_DONT_WANNA = "Ну как хотите :)"
 
 # admin callback data
 CB_SEND_ALL_YES = "send_all_yes"
 CB_SEND_ALL_NO = "send_all_no"
+CB_SEND_NOTIFS_YES = "send_notifs_yes"
+CB_SEND_NOTIFS_NO = "send_notifs_no"
 CB_BLOCK_YES = "block_yes"
 CB_BLOCK_NO = "block_no"
 CB_UNBLOCK_YES = "unblock_yes"

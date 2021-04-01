@@ -1,9 +1,6 @@
-import asyncio
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import ContentType
-from aiogram.utils.exceptions import BotBlocked, ChatNotFound, UserDeactivated
 
 from app import config, services
 from app.misc import bot, dp
@@ -143,9 +140,99 @@ async def unblock_yes(query: types.CallbackQuery, state: FSMContext):
     is_admin=True,
     state=[AdminStates.Confirm_block, AdminStates.Confirm_unblock],
 )
-async def block_unblock_no(query: types.CallbackQuery, state: FSMContext):
+async def block_unblock_no(query: types.CallbackQuery):
     await query.answer(text=config.MSG_DONT_WANNA)
     await query.message.delete_reply_markup()
 
 
 # block }}}
+
+# notifications {{{
+@dp.message_handler(commands="toggle_notifs", is_admin=True, state="*")
+async def toggle_user_is_subscribed_to_notifications(message: types.Message, state: FSMContext):
+    user_id = message.text.split()[-1]
+    if not user_id.isdigit():
+        await message.answer("Это не айдишник юзера, попробуй ещё раз, но с числами")
+        return
+    user_id = int(user_id)
+
+    is_blocked = await services.admin.is_user_blocked(user_id, User)
+    if is_blocked:
+        msg = f"{helper.get_user_link(user_id, 'Этот')} юзер и так забанен. Желаете его разбанить?"
+        await message.answer(
+            msg, reply_markup=markups.confirm_unblock(), parse_mode="markdown"
+        )
+        await services.admin.set_unblocking_user_id(user_id, state)
+        await AdminStates.Confirm_unblock.set()
+    else:
+        error = await services.admin.check_user_alive(bot, user_id)
+
+        if error:
+            return await message.answer(error)
+
+        is_subscribed_to_notifications = await services.admin.is_user_subscribed_to_notifications(
+            user_id=user_id, user_model=User,
+        )
+        toggle_service = (
+            services.admin.unsubscribe_user_to_notifications
+            if is_subscribed_to_notifications
+            else services.admin.subscribe_user_to_notifications
+        )
+        await toggle_service(
+            bot=bot,
+            user_id=user_id,
+            user_model=User,
+        )
+
+
+@dp.message_handler(commands="send_notifs", is_admin=True, state="*")
+async def cmd_send_notifs(message: types.Message):
+    await message.answer(config.MSG_INPUT_SEND_NOTIFS)
+    await AdminStates.Input_send_notifs.set()
+
+
+@dp.message_handler(
+    content_types=ContentType.ANY, is_admin=True, state=AdminStates.Input_send_notifs
+)
+async def preview_message_send_notifs(message: types.Message, state: FSMContext):
+    markup = markups.confirm_send_notifs()
+
+    preview_sending_message = await message.copy_to(message.chat.id)
+    await services.admin.set_sending_message_id(
+        int(preview_sending_message.message_id), state
+    )
+
+    await message.answer("Отправить?", reply_markup=markup)
+    await AdminStates.Confirm_send_notifs.set()
+
+
+@dp.callback_query_handler(
+    lambda query: query.data == config.CB_SEND_NOTIFS_YES,
+    is_admin=True,
+    state=AdminStates.Confirm_send_notifs,
+)
+async def send_notifs_yes(query: types.CallbackQuery, state: FSMContext):
+    await query.answer()
+    await query.message.delete_reply_markup()
+
+    sending_message_id = await services.admin.get_sending_message_id(state)
+    sending_message = types.Message(
+        message_id=sending_message_id, chat=types.Chat(id=query.from_user.id)
+    )
+    count_alive_users = await services.admin.send_notifs(
+        sending_message=sending_message, user_model=User
+    )
+    await query.message.answer(config.MSG_SUCCESFUL_SEND_NOTIFS.format(count_alive_users))
+
+
+@dp.callback_query_handler(
+    lambda query: query.data == config.CB_SEND_NOTIFS_NO,
+    is_admin=True,
+    state=AdminStates.Confirm_send_notifs,
+)
+async def send_notifs_no(query: types.CallbackQuery):
+    await query.answer(text=config.MSG_DONT_WANNA)
+    await query.message.delete_reply_markup()
+
+
+# notifications }}}

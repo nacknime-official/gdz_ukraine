@@ -76,14 +76,45 @@ async def get_sending_message_id(state: FSMContext) -> str:
     return sending_message_id
 
 
+async def send_messages_counting_alive_users(
+    *,
+    sending_message: typing.Optional[types.Message] = None,
+    bot: typing.Optional[Bot] = None,
+    users_ids: typing.List[typing.List[int]],
+) -> int:
+    """
+    :param message:         message that will be sent to the users
+                            if there's no message, it's silent broadcast with
+                            deleting message for count alive users
+    :param bot:             bot obj
+    :param user_model:      user's model for getting all user's id
+
+    :returns:               `count_alive_users` var
+    """
+    count_alive_users = 0
+
+    for user_id in users_ids:
+        if sending_message:
+            _, error = await send_message_catching_errors(
+                user_id[0], sending_message, bot=bot
+            )
+        else:
+            error = await check_user_alive(bot, user_id[0])
+        if not error:
+            count_alive_users += 1
+            await asyncio.sleep(0.05)
+
+    return count_alive_users
+
+
 async def send_all(
     *,
     sending_message: typing.Optional[types.Message] = None,
     bot: typing.Optional[Bot] = None,
-    user_model: typing.Type[User]
+    user_model: typing.Type[User],
 ) -> int:
     """
-    Sends the message for all users
+    Sends the message for all users.
     It's only admin's feature
 
     :param message:         message that will be sent to the all users
@@ -95,21 +126,43 @@ async def send_all(
     :returns:               `count_alive_users` var
     """
 
-    all_users_id = await user_model.select("user_id").gino.all()
-    count_alive_users = 0
+    all_users_ids = await user_model.select("user_id").gino.all()
+    return await send_messages_counting_alive_users(
+        sending_message=sending_message,
+        bot=bot,
+        users_ids=all_users_ids,
+    )
 
-    for user_id in all_users_id:
-        if sending_message:
-            message, error = await send_message_catching_errors(
-                user_id[0], sending_message, bot=bot
-            )
-        else:
-            error = await check_user_alive(bot, user_id[0])
-        if not error:
-            count_alive_users += 1
-            await asyncio.sleep(0.05)
 
-    return count_alive_users
+async def send_notifs(
+    *,
+    sending_message: typing.Optional[types.Message] = None,
+    bot: typing.Optional[Bot] = None,
+    user_model: typing.Type[User],
+) -> int:
+    """
+    Sends the message for all users, except for those unsubscribed to notifications.
+    It's only admin's feature
+
+    :param message:         message that will be sent to the users
+                            if there's no message, it's silent broadcast with
+                            deleting message for count alive users
+    :param bot:             bot obj
+    :param user_model:      user's model for getting all user's id
+
+    :returns:               `count_alive_users` var
+    """
+
+    subscribed_to_notifications_users_ids = await (
+        user_model.select("user_id")
+        .where(user_model.is_subscribed_to_notifications == True)
+        .gino.all()
+    )
+    return await send_messages_counting_alive_users(
+        sending_message=sending_message,
+        bot=bot,
+        users_ids=subscribed_to_notifications_users_ids,
+    )
 
 
 async def set_blocking_user_id(
@@ -257,3 +310,45 @@ async def scheduled_count_alive_users(bot: Bot, user_model: typing.Type[User]):
     await bot.send_message(
         config.ADMIN_ID, config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users)
     )
+
+
+async def is_user_subscribed_to_notifications(
+    user_id: typing.Union[int, str], user_model: User
+) -> bool:
+    """
+    Is user subscribed to notifications (like "Happy New Year!")
+
+    :param user_id:     user's id
+    :param user_model:  user's model for getting user from DB
+
+    :returns:           is user subscribed to notifications
+    """
+
+    user_id = int(user_id)
+    is_subscribed_to_notifications = (
+        await user_model.get(user_id)
+    ).is_subscribed_to_notifications
+
+    return is_subscribed_to_notifications
+
+
+async def subscribe_user_to_notifications(
+    user_id: typing.Union[int, str],
+    user_model: typing.Type[User],
+):
+    user_id = int(user_id)
+    user = await user_model.get(user_id)
+    await user.update(is_subscribed_to_notifications=True).apply()
+
+    return "Юзер был подписан"
+
+
+async def unsubscribe_user_to_notifications(
+    user_id: typing.Union[int, str],
+    user_model: typing.Type[User],
+):
+    user_id = int(user_id)
+    user = await user_model.get(user_id)
+    await user.update(is_subscribed_to_notifications=False).apply()
+
+    return "Юзер был отписан"

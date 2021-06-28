@@ -138,6 +138,7 @@ dmypy.json
 cython_debug/
 
 Session.vim
+.vim/
 
 # PyCharm
 .idea/

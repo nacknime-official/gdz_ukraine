@@ -16,9 +16,8 @@ POSTGRES_USER = os.getenv("POSTGRES_USER", default="aiogram")
 POSTGRES_DB = os.getenv("POSTGRES_DB", default="aiogram")
 POSTGRES_URI = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
-REDIS_HOST = os.getenv("REDIS_HOST", default="localhost")
-REDIS_PORT = os.getenv("REDIS_PORT", default="6379")
-REDIS_DB_FSM = os.getenv("REDIS_DB_FSM", default=0)
+MONGO_HOST = os.getenv("MONGO_HOST", default="localhost")
+MONGO_PORT = os.getenv("MONGO_PORT", default="27017")
 
 PREFIX_WRONG_PHOTO_SIZE = "wrong_size_"
 WATERMARK_PATH = str(Path.cwd() / "static" / "watermark.png")

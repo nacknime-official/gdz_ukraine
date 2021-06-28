@@ -1,13 +1,11 @@
 from aiogram import Bot, Dispatcher
-from aiogram.contrib.fsm_storage.redis import RedisStorage2
+from aiogram.contrib.fsm_storage.mongo import MongoStorage
 from aiogram.utils.executor import Executor
 
 from app import config
 
 bot = Bot(config.TELEGRAM_TOKEN)
-storage = RedisStorage2(
-    host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB_FSM
-)
+storage = MongoStorage(host=config.MONGO_HOST, port=config.MONGO_PORT)
 dp = Dispatcher(bot, storage=storage)
 runner = Executor(dp)
 

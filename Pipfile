@@ -13,17 +13,18 @@ mypy = "*"
 
 [packages]
 aiogram = "*"
-aioredis = "*"
 httpx = "*"
 alembic = "*"
 python-dotenv = "*"
-gino = "*"
+gino = {version = "==1.0.1", extras = ["asyncpg"]}
 psycopg2-binary = "*"
 uvloop = "*"
 ujson = "*"
 aiohttp = {extras = ["speedups"], version = "*"}
 click = "*"
 pillow = "*"
+pymongo = "*"
+motor = "*"
 
 [requires]
 python_version = "3.8"

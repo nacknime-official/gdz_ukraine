@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "gdz_ukraine"
+version = "0.1.0"
+description = ""
+authors = ["nacknime-official <nacknime.official@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aiogram = "*"
+httpx = "*"
+alembic = "*"
+python-dotenv = "*"
+gino = {version = "==1.0.1", extras = ["asyncpg"]}
+psycopg2-binary = "*"
+uvloop = "*"
+ujson = "*"
+aiohttp = {extras = ["speedups"], version = "*"}
+click = "*"
+pillow = "*"
+pymongo = "*"
+motor = "*"
+
+[tool.poetry.dev-dependencies]
+ipdb = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

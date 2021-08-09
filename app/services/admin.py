@@ -8,10 +8,15 @@ import typing
 
 from aiogram import Bot, types
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import BotBlocked, ChatNotFound, UserDeactivated
+from aiogram.types.chat import ChatActions
 
 from app import config
+from app.models.db import db
 from app.models.user import User
+from app.utils.exceptions import (
+    UserIsNotWithUsException,
+    catch_user_is_not_with_us_exceptions,
+)
 
 from . import base
 
@@ -19,13 +24,11 @@ from . import base
 async def send_message_catching_errors(
     chat_id: typing.Union[types.base.Integer, types.base.String],
     message: types.Message,
-    bot: typing.Optional[Bot] = None,
 ) -> typing.Tuple[types.Message, str]:
     """
     Send a message catching errors e.g. BotBlocked, UserDeactivated, ChatNotFound etc.
     Used as abstract method
 
-    :param bot:     bot object
     :other params:  for aiogram.Bot.send_message method
 
     :returns:       types.Message obj and an error
@@ -34,17 +37,10 @@ async def send_message_catching_errors(
     error = ""
 
     try:
-        # if message is created by the code
-        if not message.message_id:
-            message = await bot.send_message(chat_id=chat_id, **message.to_python())
-        else:
+        with catch_user_is_not_with_us_exceptions():
             await message.copy_to(chat_id)
-    except BotBlocked:
-        error = "Этот юзер заблочил бота"
-    except UserDeactivated:
-        error = "Этого юзера уже нету в ТГ"
-    except ChatNotFound:
-        error = "Чат не найден, либо чел выпилился из ТГ"
+    except UserIsNotWithUsException as e:
+        error = e.error_message
 
     return message, error
 
@@ -78,15 +74,11 @@ async def get_sending_message_id(state: FSMContext) -> str:
 
 async def send_messages_counting_alive_users(
     *,
-    sending_message: typing.Optional[types.Message] = None,
-    bot: typing.Optional[Bot] = None,
+    sending_message: typing.Optional[types.Message],
     users_ids: typing.List[typing.List[int]],
 ) -> int:
     """
     :param message:         message that will be sent to the users
-                            if there's no message, it's silent broadcast with
-                            deleting message for count alive users
-    :param bot:             bot obj
     :param user_model:      user's model for getting all user's id
 
     :returns:               `count_alive_users` var
@@ -94,12 +86,7 @@ async def send_messages_counting_alive_users(
     count_alive_users = 0
 
     for user_id in users_ids:
-        if sending_message:
-            _, error = await send_message_catching_errors(
-                user_id[0], sending_message, bot=bot
-            )
-        else:
-            error = await check_user_alive(bot, user_id[0])
+        _, error = await send_message_catching_errors(user_id[0], sending_message)
         if not error:
             count_alive_users += 1
             await asyncio.sleep(0.05)
@@ -109,8 +96,7 @@ async def send_messages_counting_alive_users(
 
 async def send_all(
     *,
-    sending_message: typing.Optional[types.Message] = None,
-    bot: typing.Optional[Bot] = None,
+    sending_message: typing.Optional[types.Message],
     user_model: typing.Type[User],
 ) -> int:
     """
@@ -118,9 +104,6 @@ async def send_all(
     It's only admin's feature
 
     :param message:         message that will be sent to the all users
-                            if there's no message, it's silent broadcast with
-                            deleting message for count alive users
-    :param bot:             bot obj
     :param user_model:      user's model for getting all user's id
 
     :returns:               `count_alive_users` var
@@ -129,15 +112,13 @@ async def send_all(
     all_users_ids = await user_model.select("user_id").gino.all()
     return await send_messages_counting_alive_users(
         sending_message=sending_message,
-        bot=bot,
         users_ids=all_users_ids,
     )
 
 
 async def send_notifs(
     *,
-    sending_message: typing.Optional[types.Message] = None,
-    bot: typing.Optional[Bot] = None,
+    sending_message: typing.Optional[types.Message],
     user_model: typing.Type[User],
 ) -> int:
     """
@@ -145,9 +126,6 @@ async def send_notifs(
     It's only admin's feature
 
     :param message:         message that will be sent to the users
-                            if there's no message, it's silent broadcast with
-                            deleting message for count alive users
-    :param bot:             bot obj
     :param user_model:      user's model for getting all user's id
 
     :returns:               `count_alive_users` var
@@ -160,7 +138,6 @@ async def send_notifs(
     )
     return await send_messages_counting_alive_users(
         sending_message=sending_message,
-        bot=bot,
         users_ids=subscribed_to_notifications_users_ids,
     )
 
@@ -288,11 +265,12 @@ async def check_user_alive(
     :returns:           error message
     """
 
-    removed_message, error = await send_message_catching_errors(
-        user_id, types.Message(text="test", disable_notification=True), bot=bot
-    )
-    if not error:
-        await removed_message.delete()
+    error = ""
+    try:
+        with catch_user_is_not_with_us_exceptions():
+            await bot.send_chat_action(user_id, ChatActions.TYPING)
+    except UserIsNotWithUsException as e:
+        error = e.error_message
 
     return error
 
@@ -306,7 +284,17 @@ async def scheduled_count_alive_users(bot: Bot, user_model: typing.Type[User]):
         config.ADMIN_ID, "Запланированная рассылка для подсчёта юзеров начата"
     )
 
-    count_alive_users = await send_all(bot=bot, user_model=user_model)
+    count_alive_users = 0
+
+    async with db.transaction():
+        async for user_id in user_model.select("user_id").gino.iterate():
+            user_id = user_id[0]
+
+            error = await check_user_alive(bot, user_id)
+            if not error:
+                count_alive_users += 1
+                await asyncio.sleep(0.05)
+
     await bot.send_message(
         config.ADMIN_ID, config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users)
     )

@@ -6,18 +6,19 @@ from app import config, services
 from app.misc import dp
 from app.models.photo import Photo, Solution
 from app.models.user import User
+from app.services.wrappers.wrapper import IWrapperForBot
+from app.services.wrappers.wrapper_vshkole import data_funcs
 from app.utils import markups
 from app.utils.helper import find_func_by_state_name
-from app.utils.httpx import httpx_worker
+from app.utils.httpx import httpx_client
 from app.utils.states import UserStates, quiz, state_messages
-from app.utils.wrapper_vshkole import WrapperForBot, data_funcs
 
 
 @dp.message_handler(text="Назад", state=quiz)
 async def back(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -57,14 +58,14 @@ async def cmd_any(message: types.Message, user: User, state: FSMContext):
 async def subject(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     grade = int(message.text)
     await services.base.set_data_to_db(user, grade=grade)
 
-    subjects = await wrapper.subjects()
+    subjects = await wrapper.get_subjects()
     subjects_name = [subject["name"] for subject in subjects]
     markup = markups.subjects(subjects_name)
     await message.answer(config.MSG_SUBJECT, reply_markup=markup)
@@ -78,14 +79,14 @@ async def subject(
 async def author(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     subject = message.text
     await services.base.set_data_to_db(user, subject=subject)
 
-    authors = await wrapper.authors()
+    authors = await wrapper.get_authors()
     markup = markups.authors(authors)
     await message.answer(config.MSG_AUTHOR, reply_markup=markup)
 
@@ -98,14 +99,14 @@ async def author(
 async def specifications(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     author = message.text
     await services.base.set_data_to_db(user, author=author)
 
-    specifications = await wrapper.specifications()
+    specifications = await wrapper.get_specifications()
     markup = markups.specifications(specifications)
     await message.answer(config.MSG_SPECIFICATION, reply_markup=markup)
 
@@ -118,14 +119,14 @@ async def specifications(
 async def years(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     specification = message.text
     await services.base.set_data_to_db(user, specification=specification)
 
-    years = await wrapper.years()
+    years = await wrapper.get_years()
     next_state = UserStates.Year
     if len(years) >= 2:
         markup = markups.years(years)
@@ -142,7 +143,7 @@ async def years(
 async def main_topic(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -151,7 +152,7 @@ async def main_topic(
         year = int(message.text)
     await services.base.set_data_to_db(user, year=year)
 
-    main_topics = await wrapper.main_topics()
+    main_topics = await wrapper.get_main_topics()
     markup = markups.main_topics(main_topics)
     await message.answer(config.MSG_MAIN_TOPIC, reply_markup=markup)
 
@@ -164,14 +165,14 @@ async def main_topic(
 async def sub_topic(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     main_topic = message.text
     await services.base.set_data_to_db(user, main_topic=main_topic)
 
-    sub_topics = await wrapper.sub_topics()
+    sub_topics = await wrapper.get_sub_topics()
     next_state = UserStates.Sub_topic
     if sub_topics:
         markup = markups.sub_topics(sub_topics)
@@ -189,14 +190,14 @@ async def sub_topic(
 async def sub_sub_topic(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     sub_topic = message.text
     await services.base.set_data_to_db(user, sub_topic=sub_topic)
 
-    sub_sub_topics = await wrapper.sub_sub_topics()
+    sub_sub_topics = await wrapper.get_sub_sub_topics()
     next_state = UserStates.Sub_sub_topic
     if sub_sub_topics:
         markup = markups.sub_sub_topics(sub_sub_topics)
@@ -214,14 +215,14 @@ async def sub_sub_topic(
 async def exercise(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     sub_sub_topic = message.text
     await services.base.set_data_to_db(user, sub_sub_topic=sub_sub_topic)
 
-    exercises = await wrapper.exercises()
+    exercises = await wrapper.get_exercises()
     markup = markups.exercises(exercises)
     await message.answer(config.MSG_EXERCISE, reply_markup=markup)
 
@@ -234,20 +235,18 @@ async def exercise(
 async def solution(
     message: types.Message,
     user: User,
-    wrapper: WrapperForBot,
+    wrapper: IWrapperForBot,
     keyboard: dict,
     state: FSMContext,
 ):
     exercise = message.text
     await services.base.set_data_to_db(user, exercise=exercise)
 
-    solution = await wrapper.solution()
-    solution_id = int(solution[0])
-    solution_urls = solution[1]
+    solution = await wrapper.get_solution()
 
-    for solution_url in solution_urls:
+    for solution_url in solution.urls:
         await services.user.send_solution_and_save_to_db(
-            solution_id, solution_url, message, Solution, Photo, httpx_worker
+            solution.id, solution_url, message, Solution, Photo, httpx_client
         )
 
 

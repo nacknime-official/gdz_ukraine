@@ -2,8 +2,8 @@ import httpx
 from aiogram import Dispatcher
 from aiogram.utils.executor import Executor
 
-
-class HttpxWorker:
+# TODO: is it needed?
+class HttpxClient:
     def __init__(self):
         self.client = httpx.AsyncClient()
 
@@ -15,11 +15,11 @@ class HttpxWorker:
         await self.client.aclose()
 
 
-httpx_worker = HttpxWorker()
+httpx_client = HttpxClient()
 
 
 async def on_shutdown(dp: Dispatcher):
-    await httpx_worker.close()
+    await httpx_client.close()
 
 
 def setup(runner: Executor):

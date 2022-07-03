@@ -1,12 +1,14 @@
-from typing import List
+import asyncio
+from typing import List, Optional
 
 import httpx
 from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
 from app.services import base
+from app.services.wrappers.wrapper import IWrapper, IWrapperForBot, Solution
 from app.utils.helper import name_func
-from app.utils.httpx import httpx_worker
+from app.utils.httpx import HttpxClient, httpx_client
 
 grades = {
     "1": 11,
@@ -26,11 +28,11 @@ data_funcs: List[name_func] = []
 
 
 def register_data_func(f):
-    data_funcs.append(name_func(f.__name__, f))
+    data_funcs.append(name_func(f.__name__[4:], f))
     return f
 
 
-class Wrapper:
+class WrapperVshkole(IWrapper):
     API_SUBJECTS = (
         "https://vshkole.com/api/get_class_subjects?new-app=1&class_id={}&type=ab"
     )
@@ -53,6 +55,7 @@ class Wrapper:
         sub_sub_topic=None,
         exercise=None,
         solution_id=None,
+        client: Optional[HttpxClient] = None,
     ):
         self._grade = grade
         self._subject = subject
@@ -68,11 +71,11 @@ class Wrapper:
         self._sub_sub_topic = sub_sub_topic
         self._exercise = exercise
         self._solution_id = solution_id
-        self._client = httpx.AsyncClient()
+        self._client = client if client else HttpxClient()
 
     # init private methods
     async def _close_client(self):
-        await self._client.aclose()
+        await self._client.close()
 
     async def _get_data(self, url):
         r = await self._client.get(url)
@@ -181,18 +184,19 @@ class Wrapper:
         self._solution_id = value
 
     # main methods
-    async def subjects(self):
+    async def get_subjects(self) -> List[str]:
         url = self.API_SUBJECTS.format(self.grade)
         data = await self._get_data(url)
-        return data
+        self._subjects = data
+        return [subject["name"] for subject in data]
 
-    async def subject_entities(self):
+    async def _get_subject_entities(self):
         url = self.API_SUBJECT_ENTITIES.format(self.grade, self.subject)
         data = await self._get_data(url)
         return data
 
-    async def authors(self):
-        self._subject_entities = await self.subject_entities()
+    async def get_authors(self) -> List[str]:
+        self._subject_entities = await self._get_subject_entities()
         uni_authors = []
         used_authors = []
 
@@ -204,7 +208,7 @@ class Wrapper:
                 used_authors.append(lower_author.strip())
         return uni_authors
 
-    async def specifications(self):
+    async def get_specifications(self) -> List[str]:
         specifications = []
 
         for entity in self._subject_entities:
@@ -216,7 +220,7 @@ class Wrapper:
                 specifications.append(specification.strip())
         return specifications
 
-    async def years(self):
+    async def get_years(self) -> List[str]:
         years = []
 
         for entity in self._subject_entities:
@@ -227,23 +231,23 @@ class Wrapper:
                 years.append(year.strip())
         return years
 
-    async def entities(self):
+    async def _get_entities(self):
         url = self.API_ENTITIE.format(self.book_id)
         data = await self._get_data(url)
         return data
 
-    async def main_topics(self):
-        self._entities = await self.entities()
+    async def get_main_topics(self) -> List[str]:
+        self._entities = await self._get_entities()
         return [entity["name"].strip() for entity in self._entities["contents"]]
 
-    async def sub_topics(self):
+    async def get_sub_topics(self) -> List[str]:
         return [
             i["name"]
             for i in self.get_child(self._entities["contents"], (self.main_topic,))
             if i.get("__children")
         ]
 
-    async def sub_sub_topics(self):
+    async def get_sub_sub_topics(self) -> List[str]:
         return [
             i["name"]
             for i in self.get_child(
@@ -252,7 +256,7 @@ class Wrapper:
             if i.get("__children")
         ]
 
-    async def exercises(self):
+    async def get_exercises(self) -> List[str]:
         return [
             i["name"]
             for i in self.get_child(
@@ -261,15 +265,14 @@ class Wrapper:
             )
         ]
 
-    async def solution(self):
+    async def get_solution(self) -> Solution:
         solutions = list(
             self.get_child(
                 self._entities["contents"],
                 (self.main_topic, self.sub_topic, self.sub_sub_topic, self.exercise),
             )
         )[0]
-        self.solution_id = solutions["id"]
-        return solutions["image_urls"]
+        return Solution(int(solutions["id"]), solutions["image_urls"])
 
     # init static methods
     @staticmethod
@@ -296,13 +299,11 @@ class Wrapper:
                             yield from grandchildren
 
 
-class WrapperForBot(Wrapper):
-    def __init__(self, user: User, state: FSMContext, **kwargs):
+class WrapperVshkoleForBot(IWrapperForBot):
+    def __init__(self, wrapper: WrapperVshkole, user: User, state: FSMContext):
+        self.wrapper = wrapper
         self._user = user
         self._state = state
-
-        super().__init__(**kwargs)
-        self._client = httpx_worker
 
     async def _init(self):
         """
@@ -311,100 +312,98 @@ class WrapperForBot(Wrapper):
         """
 
         state_data = await self._state.get_data()
-        self._subjects = state_data.get("Wrapper_subjects")
-        self._subject_entities = state_data.get("Wrapper_subject_entities")
-        self._entities = state_data.get("Wrapper_entities")
+        self.wrapper._subjects = state_data.get("Wrapper_subjects")
+        self.wrapper._subject_entities = state_data.get("Wrapper_subject_entities")
+        self.wrapper._entities = state_data.get("Wrapper_entities")
 
     @register_data_func
-    async def subjects(self, delete_data=False):
+    async def get_subjects(self, delete_data=False):
         if delete_data:
             return await base.set_state_data(self._state, Wrapper_subjects=None)
 
-        self.grade = self._user.grade
-        subjects = await super().subjects()
-        await base.set_state_data(self._state, Wrapper_subjects=subjects)
+        self.wrapper.grade = self._user.grade
+        subjects = await self.wrapper.get_subjects()
+        await base.set_state_data(self._state, Wrapper_subjects=self.wrapper._subjects)
         return subjects
 
     @register_data_func
-    async def authors(self, delete_data=False):
+    async def get_authors(self, delete_data=False):
         if delete_data:
             return await base.set_state_data(self._state, Wrapper_subject_entities=None)
 
-        self.grade = self._user.grade
-        self.subject = self._user.subject
-        authors = await super().authors()
-        entities = self._subject_entities
+        self.wrapper.grade = self._user.grade
+        self.wrapper.subject = self._user.subject
+        authors = await self.wrapper.get_authors()
+        entities = self.wrapper._subject_entities
         await base.set_state_data(self._state, Wrapper_subject_entities=entities)
         return authors
 
     @register_data_func
-    async def specifications(self, **kwargs):
-        self.author = self._user.author
-        specifications = await super().specifications()
+    async def get_specifications(self, delete_data=False):
+        self.wrapper.author = self._user.author
+        specifications = await self.wrapper.get_specifications()
         return specifications
 
     @register_data_func
-    async def years(self, **kwargs):
-        self.author = self._user.author
-        self.specification = self._user.specification
-        years = await super().years()
+    async def get_years(self, delete_data=False):
+        self.wrapper.author = self._user.author
+        self.wrapper.specification = self._user.specification
+        years = await self.wrapper.get_years()
         return years
 
     @register_data_func
-    async def main_topics(self, delete_data=False):
+    async def get_main_topics(self, delete_data=False):
         if delete_data:
             return await base.set_state_data(self._state, Wrapper_entities=None)
 
-        self.author = self._user.author
-        self.specification = self._user.specification
-        self.year = self._user.year
-        main_topics = await super().main_topics()
-        entities = self._entities
+        self.wrapper.author = self._user.author
+        self.wrapper.specification = self._user.specification
+        self.wrapper.year = self._user.year
+        main_topics = await self.wrapper.get_main_topics()
+        entities = self.wrapper._entities
         await base.set_state_data(self._state, Wrapper_entities=entities)
         return main_topics
 
     @register_data_func
-    async def sub_topics(self, **kwargs):
-        self.main_topic = self._user.main_topic
-        sub_topics = await super().sub_topics()
+    async def get_sub_topics(self, delete_data=False):
+        self.wrapper.main_topic = self._user.main_topic
+        sub_topics = await self.wrapper.get_sub_topics()
         return sub_topics
 
     @register_data_func
-    async def sub_sub_topics(self, **kwargs):
-        self.main_topic = self._user.main_topic
-        self.sub_topic = self._user.sub_topic
-        sub_sub_topics = await super().sub_sub_topics()
+    async def get_sub_sub_topics(self, delete_data=False):
+        self.wrapper.main_topic = self._user.main_topic
+        self.wrapper.sub_topic = self._user.sub_topic
+        sub_sub_topics = await self.wrapper.get_sub_sub_topics()
         return sub_sub_topics
 
     @register_data_func
-    async def exercises(self, **kwargs):
-        self.main_topic = self._user.main_topic
-        self.sub_topic = self._user.sub_topic
-        self.sub_sub_topic = self._user.sub_sub_topic
-        exercises = await super().exercises()
+    async def get_exercises(self, delete_data=False):
+        self.wrapper.main_topic = self._user.main_topic
+        self.wrapper.sub_topic = self._user.sub_topic
+        self.wrapper.sub_sub_topic = self._user.sub_sub_topic
+        exercises = await self.wrapper.get_exercises()
         return exercises
 
     @register_data_func
-    async def solution(self, **kwargs):
-        self.main_topic = self._user.main_topic
-        self.sub_topic = self._user.sub_topic
-        self.sub_sub_topic = self._user.sub_sub_topic
-        self.exercise = self._user.exercise
-        solution_urls = await super().solution()
-        solution_id = self.solution_id
-        return solution_id, solution_urls
+    async def get_solution(self, delete_data=False):
+        self.wrapper.main_topic = self._user.main_topic
+        self.wrapper.sub_topic = self._user.sub_topic
+        self.wrapper.sub_sub_topic = self._user.sub_sub_topic
+        self.wrapper.exercise = self._user.exercise
+        return await self.wrapper.get_solution()
 
 
-async def create_wrapper_for_bot(
-    user: User, state: FSMContext, **kwargs
-) -> WrapperForBot:
+async def create_wrapper_vshkole_for_bot(
+    wrapper: WrapperVshkole, user: User, state: FSMContext, **kwargs
+) -> WrapperVshkoleForBot:
     """
     A factory used for asynchronous initializing
 
     :returns:   WrapperForBot instance
     """
 
-    wrapper_for_bot = WrapperForBot(user, state, **kwargs)
+    wrapper_for_bot = WrapperVshkoleForBot(wrapper, user, state, **kwargs)
     await wrapper_for_bot._init()
 
     return wrapper_for_bot

@@ -16,7 +16,7 @@ from PIL import Image
 from app import config
 from app.models.photo import Photo, Solution
 from app.utils.helper import find_func_by_state_name
-from app.utils.httpx import HttpxWorker
+from app.utils.httpx import HttpxClient
 from app.utils.markups import NAVIGATION_BUTTONS, markups_list
 from app.utils.states import UserStates
 
@@ -137,7 +137,7 @@ async def send_solution_and_save_to_db(
     user_message: types.Message,
     solution_model: Solution,
     photo_model: Photo,
-    httpx_worker: HttpxWorker,
+    httpx_client: HttpxClient,
 ) -> None:
     """
     Send solution (photo) to the user and save the solution to db
@@ -149,7 +149,7 @@ async def send_solution_and_save_to_db(
                             sizes and send the solution to the user
     :param solution_model:  solution model obj
     :param photo_model:     photo model obj
-    :param httpx_worker:    httpx obj, used for getting a solution from the solution url
+    :param httpx_client:    httpx obj, used for getting a solution from the solution url
 
     :returns:               None
     """
@@ -173,7 +173,7 @@ async def send_solution_and_save_to_db(
                     break
 
     if img_id is None:
-        img = await httpx_worker.get(solution_url)
+        img = await httpx_client.get(solution_url)
         img_content = await (
             asyncio.get_running_loop().run_in_executor(
                 None, watermark_solution, img.content, config.WATERMARK_PATH

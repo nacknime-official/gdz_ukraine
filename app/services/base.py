@@ -42,7 +42,7 @@ async def get_model_obj_from_db_by_id(model: BaseModel, id: Any):
     Used for getting solution (photo) object
 
     :param model:   model that contains `id` column
-    :param id:      used fot getting object by id
+    :param id:      used for getting object by id
 
     :returns:       model object
     """

@@ -66,8 +66,7 @@ async def subject(
     await services.base.set_data_to_db(user, grade=grade)
 
     subjects = await wrapper.get_subjects()
-    subjects_name = [subject["name"] for subject in subjects]
-    markup = markups.subjects(subjects_name)
+    markup = markups.subjects(subjects)
     await message.answer(config.MSG_SUBJECT, reply_markup=markup)
 
     next_state = UserStates.Subject

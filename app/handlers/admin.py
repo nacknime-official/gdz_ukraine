@@ -219,7 +219,7 @@ async def send_notifs_yes(query: types.CallbackQuery, state: FSMContext):
         sending_message=sending_message, user_model=User
     )
     await query.message.answer(
-        config.MSG_SUCCESFUL_SEND_NOTIFS.format(count_alive_users)
+        config.MSG_SUCCESSFUL_SEND_NOTIFS.format(count_alive_users)
     )
 
 

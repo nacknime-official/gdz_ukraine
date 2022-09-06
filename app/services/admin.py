@@ -296,7 +296,7 @@ async def scheduled_count_alive_users(bot: Bot, user_model: typing.Type[User]):
                 await asyncio.sleep(0.05)
 
     await bot.send_message(
-        config.ADMIN_ID, config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users)
+        config.ADMIN_ID, config.MSG_SUCCESSFUL_SEND_ALL.format(count_alive_users)
     )
 
 

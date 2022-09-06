@@ -42,9 +42,9 @@ BTN_GOTO_BACK = "Назад"
 
 # admin messages
 MSG_INPUT_SEND_ALL = "Введіть текст для розсилки"
-MSG_SUCCESFUL_SEND_ALL = "Успішно відправлено {} юзерам"
+MSG_SUCCESSFUL_SEND_ALL = "Успішно відправлено {} юзерам"
 MSG_INPUT_SEND_NOTIFS = "Введіть текст для розсилки"
-MSG_SUCCESFUL_SEND_NOTIFS = "Успішно відправлено {} юзерам"
+MSG_SUCCESSFUL_SEND_NOTIFS = "Успішно відправлено {} юзерам"
 MSG_DONT_WANNA = "Ну як хочете :)"
 MSG_SEND_OR_NOT = "Відправити?"
 MSG_INPUT_BLOCKING_USER_ID = "Введіть айді юзера, якого треба заблокувати"

@@ -27,7 +27,7 @@ async def preview_message_send_all(message: types.Message, state: FSMContext):
         int(preview_sending_message.message_id), state
     )
 
-    await message.answer("Отправить?", reply_markup=markup)
+    await message.answer(config.MSG_SEND_OR_NOT, reply_markup=markup)
     await AdminStates.Confirm_send_all.set()
 
 
@@ -71,7 +71,7 @@ async def cmd_count_alive_users(message: types.Message, state: FSMContext):
 # block {{{
 @dp.message_handler(commands="block", is_admin=True, state="*")
 async def cmd_block(message: types.Message):
-    await message.answer("Введите айди юзера, которого нужно забанить")
+    await message.answer(config.MSG_INPUT_BLOCKING_USER_ID)
     await AdminStates.Input_block.set()
 
 
@@ -79,13 +79,13 @@ async def cmd_block(message: types.Message):
 async def block_confirm(message: types.Message, state: FSMContext):
     user_id = message.text
     if not user_id.isdigit():
-        await message.answer("Это не айдишник юзера, попробуй ещё раз, но с числами")
+        await message.answer(config.MSG_WRONG_BLOCKING_USER_ID)
         return
     user_id = int(user_id)
 
     is_blocked = await services.admin.is_user_blocked(user_id, User)
     if is_blocked:
-        msg = f"{helper.get_user_link(user_id, 'Этот')} юзер и так забанен. Желаете его разбанить?"
+        msg = f"{helper.get_user_link(user_id, config.MSG_THIS_USER)} {config.MSG_USER_ALREADY_BLOCKED_DO_YOU_WANNA_UNBLOCK}"
         await message.answer(
             msg, reply_markup=markups.confirm_unblock(), parse_mode="markdown"
         )
@@ -97,7 +97,7 @@ async def block_confirm(message: types.Message, state: FSMContext):
         if error:
             return await message.answer(error)
 
-        msg = f"Вы уверены, что хотите забанить {helper.get_user_link(user_id)}?"
+        msg = f"{config.MSG_BLOCK_SURE} {helper.get_user_link(user_id)}?"
         await message.answer(
             msg, reply_markup=markups.confirm_block(), parse_mode="markdown"
         )
@@ -117,7 +117,7 @@ async def block_yes(query: types.CallbackQuery, state: FSMContext):
     await services.admin.block_user(blocking_user_id, User)
 
     await query.message.delete_reply_markup()
-    await query.message.answer("Вы успешно забанили этого юзера")
+    await query.message.answer(config.MSG_SUCCESSFUL_BLOCK)
 
 
 @dp.callback_query_handler(
@@ -132,7 +132,7 @@ async def unblock_yes(query: types.CallbackQuery, state: FSMContext):
     await services.admin.unblock_user(unblocking_user_id, User)
 
     await query.message.delete_reply_markup()
-    await query.message.answer("Вы успешно разбанили этого юзера")
+    await query.message.answer(config.MSG_SUCCESSFUL_UNBLOCK)
 
 
 @dp.callback_query_handler(
@@ -154,7 +154,7 @@ async def toggle_user_is_subscribed_to_notifications(
 ):
     user_id = message.text.split()[-1]
     if not user_id.isdigit():
-        await message.answer("Это не айдишник юзера, попробуй ещё раз, но с числами")
+        await message.answer(config.MSG_WRONG_TOGGLE_NOTIFS_USER_ID)
         return
     user_id = int(user_id)
 
@@ -198,7 +198,7 @@ async def preview_message_send_notifs(message: types.Message, state: FSMContext)
         int(preview_sending_message.message_id), state
     )
 
-    await message.answer("Отправить?", reply_markup=markup)
+    await message.answer(config.MSG_SEND_OR_NOT, reply_markup=markup)
     await AdminStates.Confirm_send_notifs.set()
 
 

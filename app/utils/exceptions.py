@@ -31,11 +31,11 @@ def catch_user_is_not_with_us_exceptions():
     try:
         yield
     except BotBlocked:
-        error = "Этот юзер заблочил бота"
+        error = "This user blocked the bot"
     except UserDeactivated:
-        error = "Этого юзера уже нету в ТГ"
+        error = "This user is no longer in TG"
     except ChatNotFound:
-        error = "Чат не найден, либо чел выпилился из ТГ"
+        error = "Chat not found or the user has deleted his account"
     except CantInitiateConversation:
         error = "CantInitiateConversation"
 

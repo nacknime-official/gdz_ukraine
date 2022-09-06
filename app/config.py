@@ -23,23 +23,50 @@ PREFIX_WRONG_PHOTO_SIZE = "wrong_size_"
 WATERMARK_PATH = str(Path.cwd() / "static" / "watermark.png")
 
 # user messages
-MSG_START = "Выберите клас"
-MSG_SUBJECT = "Выбери предмет"
-MSG_AUTHOR = "Выбери автора"
-MSG_SPECIFICATION = "Выбери тип"
-MSG_YEAR = "Выбери год"
-MSG_MAIN_TOPIC = "Выбери главную тему"
-MSG_SUB_TOPIC = "Выбери подтему"
-MSG_SUB_SUB_TOPIC = "Выбери подподтему"
-MSG_EXERCISE = "Выбери задание"
-MSG_WRONG_INPUT = "Тыкни на кнопку внизу"
+MSG_START = "Вибери клас"
+MSG_SUBJECT = "Вибери предмет"
+MSG_AUTHOR = "Вибери автора"
+MSG_SPECIFICATION = "Вибери тип"
+MSG_YEAR = "Вибери рік"
+MSG_MAIN_TOPIC = "Вибери головну тему"
+MSG_SUB_TOPIC = "Вибери підтему"
+MSG_SUB_SUB_TOPIC = "Вибери підпідтему"
+MSG_EXERCISE = "Вибери завдання"
+MSG_WRONG_INPUT = "Тицьни на кнопку знизу"
+MSG_COMMAND_NOT_FOUND = "Такої команди немає"
+MSG_SOMETHING_GOES_WRONG_GO_START = "Щось пішло не так... Тицьни на /start"
+
+# user buttons
+BTN_GOTO_START = "Головне меню"
+BTN_GOTO_BACK = "Назад"
 
 # admin messages
-MSG_INPUT_SEND_ALL = "Введите текст для рассылки"
-MSG_SUCCESFUL_SEND_ALL = "Успешно отправлено {} юзерам"
-MSG_INPUT_SEND_NOTIFS = "Введите текст для рассылки"
-MSG_SUCCESFUL_SEND_NOTIFS = "Успешно отправлено {} юзерам"
-MSG_DONT_WANNA = "Ну как хотите :)"
+MSG_INPUT_SEND_ALL = "Введіть текст для розсилки"
+MSG_SUCCESFUL_SEND_ALL = "Успішно відправлено {} юзерам"
+MSG_INPUT_SEND_NOTIFS = "Введіть текст для розсилки"
+MSG_SUCCESFUL_SEND_NOTIFS = "Успішно відправлено {} юзерам"
+MSG_DONT_WANNA = "Ну як хочете :)"
+MSG_SEND_OR_NOT = "Відправити?"
+MSG_INPUT_BLOCKING_USER_ID = "Введіть айді юзера, якого треба заблокувати"
+MSG_WRONG_BLOCKING_USER_ID = "Це не айдішник юзера, спробуй ще раз, але з числами"
+MSG_THIS_USER = "Цей"
+MSG_USER_ALREADY_BLOCKED_DO_YOU_WANNA_UNBLOCK = (
+    "юзер вже заблокований. Бажаєте його розблокувати?"
+)
+MSG_BLOCK_SURE = "Ви впевнені, що хочете заблокувати цього юзера?"
+MSG_SUCCESSFUL_BLOCK = "Ви успішно заблокували цього юзера"
+MSG_SUCCESSFUL_UNBLOCK = "Ви успішно розблокували цього юзера"
+MSG_WRONG_TOGGLE_NOTIFS_USER_ID = "Це не айдішник юзера, спробуй ще раз, але з числами"
+
+# admin buttons
+BTN_SEND_ALL_YES = "Так"
+BTN_SEND_ALL_NO = "Ні"
+BTN_SEND_NOTIFS_YES = "Так"
+BTN_SEND_NOTIFS_NO = "Ні"
+BTN_BLOCK_YES = "Так"
+BTN_BLOCK_NO = "Ні"
+BTN_UNBLOCK_YES = "Так"
+BTN_UNBLOCK_NO = "Ні"
 
 # admin callback data
 CB_SEND_ALL_YES = "send_all_yes"

@@ -14,7 +14,7 @@ from app.utils.httpx import httpx_client
 from app.utils.states import UserStates, quiz, state_messages
 
 
-@dp.message_handler(text="Назад", state=quiz)
+@dp.message_handler(text=config.BTN_GOTO_BACK, state=quiz)
 async def back(
     message: types.Message,
     user: User,
@@ -35,7 +35,7 @@ async def back(
     await message.answer(prev_msg, reply_markup=prev_markup)
 
 
-@dp.message_handler(text="Главное меню", state="*")
+@dp.message_handler(text=config.BTN_GOTO_START, state="*")
 @dp.message_handler(commands="start", state="*")
 async def cmd_start(message: types.Message, user: User, state: FSMContext):
     await state.reset_data()
@@ -51,7 +51,7 @@ async def cmd_start(message: types.Message, user: User, state: FSMContext):
 
 @dp.message_handler(lambda message: message.is_command(), state="*")
 async def cmd_any(message: types.Message, user: User, state: FSMContext):
-    await message.answer("Такой команды нету")
+    await message.answer(config.MSG_COMMAND_NOT_FOUND)
 
 
 @dp.message_handler(state=UserStates.Grade)
@@ -251,4 +251,4 @@ async def solution(
 
 @dp.message_handler(state="*")
 async def other_text(message: types.Message, user: User, state: FSMContext):
-    await message.answer("Что-то пошло не так... Тыкни на /start")
+    await message.answer(config.MSG_SOMETHING_GOES_WRONG_GO_START)

@@ -2,8 +2,10 @@ from aiogram import Dispatcher
 
 from app.middlewares.acl import ACLMiddleware
 from app.middlewares.check_input import Checker
+from app.middlewares.item_filterer import ItemFiltererMiddleware
 from app.middlewares.throttling import ThrottlingMiddleware
 from app.middlewares.wrapper import WrapperMiddleware
+from app.services.item_filterer import ItemFiltererArgs
 
 
 def setup(dp: Dispatcher):
@@ -11,3 +13,6 @@ def setup(dp: Dispatcher):
     dp.middleware.setup(ACLMiddleware())
     dp.middleware.setup(WrapperMiddleware())
     dp.middleware.setup(Checker())
+    dp.middleware.setup(
+        ItemFiltererMiddleware(ItemFiltererArgs(subjects=["Русский язык"]))
+    )

@@ -6,6 +6,7 @@ from app import config, services
 from app.misc import dp
 from app.models.photo import Photo, Solution
 from app.models.user import User
+from app.services.item_filterer import ItemFiltererI
 from app.services.wrappers.wrapper import IWrapperForBot
 from app.services.wrappers.wrapper_vshkole import data_funcs
 from app.utils import markups
@@ -59,6 +60,7 @@ async def subject(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -66,6 +68,7 @@ async def subject(
     await services.base.set_data_to_db(user, grade=grade)
 
     subjects = await wrapper.get_subjects()
+    subjects = await item_filterer.subjects_filter(subjects)
     markup = markups.subjects(subjects)
     await message.answer(config.MSG_SUBJECT, reply_markup=markup)
 
@@ -79,6 +82,7 @@ async def author(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -86,6 +90,7 @@ async def author(
     await services.base.set_data_to_db(user, subject=subject)
 
     authors = await wrapper.get_authors()
+    authors = await item_filterer.authors_filter(authors)
     markup = markups.authors(authors)
     await message.answer(config.MSG_AUTHOR, reply_markup=markup)
 
@@ -99,6 +104,7 @@ async def specifications(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -106,6 +112,7 @@ async def specifications(
     await services.base.set_data_to_db(user, author=author)
 
     specifications = await wrapper.get_specifications()
+    specifications = await item_filterer.specifications_filter(specifications)
     markup = markups.specifications(specifications)
     await message.answer(config.MSG_SPECIFICATION, reply_markup=markup)
 
@@ -119,6 +126,7 @@ async def years(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -126,6 +134,7 @@ async def years(
     await services.base.set_data_to_db(user, specification=specification)
 
     years = await wrapper.get_years()
+    years = await item_filterer.years_filter(years)
     next_state = UserStates.Year
     if len(years) >= 2:
         markup = markups.years(years)
@@ -135,7 +144,7 @@ async def years(
     else:
         keyboard[next_state.state] = None
         message.text = None
-        await main_topic(message, user, wrapper, keyboard, state)
+        await main_topic(message, user, wrapper, item_filterer, keyboard, state)
 
 
 @dp.message_handler(state=UserStates.Year)
@@ -143,6 +152,7 @@ async def main_topic(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -165,6 +175,7 @@ async def sub_topic(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -182,7 +193,7 @@ async def sub_topic(
     else:
         keyboard[next_state.state] = None
         message.text = None
-        await sub_sub_topic(message, user, wrapper, keyboard, state)
+        await sub_sub_topic(message, user, wrapper, item_filterer, keyboard, state)
 
 
 @dp.message_handler(state=UserStates.Sub_topic)
@@ -190,6 +201,7 @@ async def sub_sub_topic(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -207,7 +219,7 @@ async def sub_sub_topic(
     else:
         keyboard[next_state.state] = None
         message.text = None
-        await exercise(message, user, wrapper, keyboard, state)
+        await exercise(message, user, wrapper, item_filterer, keyboard, state)
 
 
 @dp.message_handler(state=UserStates.Sub_sub_topic)
@@ -215,6 +227,7 @@ async def exercise(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
+    item_filterer: ItemFiltererI,
     keyboard: dict,
     state: FSMContext,
 ):

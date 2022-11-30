@@ -1,14 +1,12 @@
-import asyncio
 from typing import List, Optional
 
-import httpx
 from aiogram.dispatcher.storage import FSMContext
 
 from app.models.user import User
 from app.services import base
 from app.services.wrappers.wrapper import IWrapper, IWrapperForBot, Solution
 from app.utils.helper import name_func
-from app.utils.httpx import HttpxClient, httpx_client
+from app.utils.httpx import HttpxClient
 
 grades = {
     "1": 11,

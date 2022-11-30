@@ -5,7 +5,7 @@ Specialize in user features
 
 import asyncio
 from io import BytesIO
-from typing import Tuple, Type
+from typing import Tuple
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -79,7 +79,9 @@ async def set_next_state_markup(
 
 
 async def clean_current_state_markup(
-    current_state: str, keyboard: dict, state: FSMContext,
+    current_state: str,
+    keyboard: dict,
+    state: FSMContext,
 ) -> None:
     """
     Clean a markup of the user's current state data (concrete - `keyboard` dictionary)

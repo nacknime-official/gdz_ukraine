@@ -1,6 +1,5 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import PhotoDimensions
 
 from app import config, services
 from app.misc import dp

@@ -17,8 +17,8 @@ def get_user_link(user_id: Union[str, int], text: Optional[str] = None) -> str:
     :returns:         link
     """
     if not text:
-        text = user_id
-    return link(str(text), f"tg://user?id={user_id}")
+        text = str(user_id)
+    return link(text, f"tg://user?id={user_id}")
 
 
 def find_func_by_state_name(

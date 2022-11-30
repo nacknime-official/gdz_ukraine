@@ -6,7 +6,7 @@ from app import config, services
 from app.misc import dp
 from app.models.photo import Photo, Solution
 from app.models.user import User
-from app.services.item_filterer import ItemFiltererI
+from app.services.item_filter import ItemFilters
 from app.services.wrappers.wrapper import IWrapperForBot
 from app.services.wrappers.wrapper_vshkole import data_funcs
 from app.utils import markups
@@ -60,7 +60,7 @@ async def subject(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -68,7 +68,7 @@ async def subject(
     await services.base.set_data_to_db(user, grade=grade)
 
     subjects = await wrapper.get_subjects()
-    subjects = await item_filterer.subjects_filter(subjects)
+    subjects = await item_filters.subjects.filter(subjects)
     markup = markups.subjects(subjects)
     await message.answer(config.MSG_SUBJECT, reply_markup=markup)
 
@@ -82,7 +82,7 @@ async def author(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -90,7 +90,7 @@ async def author(
     await services.base.set_data_to_db(user, subject=subject)
 
     authors = await wrapper.get_authors()
-    authors = await item_filterer.authors_filter(authors)
+    authors = await item_filters.authors.filter(authors)
     markup = markups.authors(authors)
     await message.answer(config.MSG_AUTHOR, reply_markup=markup)
 
@@ -104,7 +104,7 @@ async def specifications(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -112,7 +112,7 @@ async def specifications(
     await services.base.set_data_to_db(user, author=author)
 
     specifications = await wrapper.get_specifications()
-    specifications = await item_filterer.specifications_filter(specifications)
+    specifications = await item_filters.specifications.filter(specifications)
     markup = markups.specifications(specifications)
     await message.answer(config.MSG_SPECIFICATION, reply_markup=markup)
 
@@ -126,7 +126,7 @@ async def years(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -134,7 +134,7 @@ async def years(
     await services.base.set_data_to_db(user, specification=specification)
 
     years = await wrapper.get_years()
-    years = await item_filterer.years_filter(years)
+    years = await item_filters.years.filter(years)
     next_state = UserStates.Year
     if len(years) >= 2:
         markup = markups.years(years)
@@ -144,7 +144,7 @@ async def years(
     else:
         keyboard[next_state.state] = None
         message.text = None
-        await main_topic(message, user, wrapper, item_filterer, keyboard, state)
+        await main_topic(message, user, wrapper, item_filters, keyboard, state)
 
 
 @dp.message_handler(state=UserStates.Year)
@@ -152,7 +152,7 @@ async def main_topic(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -162,6 +162,7 @@ async def main_topic(
     await services.base.set_data_to_db(user, year=year)
 
     main_topics = await wrapper.get_main_topics()
+    main_topics = await item_filters.main_topics.filter(main_topics)
     markup = markups.main_topics(main_topics)
     await message.answer(config.MSG_MAIN_TOPIC, reply_markup=markup)
 
@@ -175,7 +176,7 @@ async def sub_topic(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -183,6 +184,7 @@ async def sub_topic(
     await services.base.set_data_to_db(user, main_topic=main_topic)
 
     sub_topics = await wrapper.get_sub_topics()
+    sub_topics = await item_filters.sub_topics.filter(sub_topics)
     next_state = UserStates.Sub_topic
     if sub_topics:
         markup = markups.sub_topics(sub_topics)
@@ -193,7 +195,7 @@ async def sub_topic(
     else:
         keyboard[next_state.state] = None
         message.text = None
-        await sub_sub_topic(message, user, wrapper, item_filterer, keyboard, state)
+        await sub_sub_topic(message, user, wrapper, item_filters, keyboard, state)
 
 
 @dp.message_handler(state=UserStates.Sub_topic)
@@ -201,7 +203,7 @@ async def sub_sub_topic(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -209,6 +211,7 @@ async def sub_sub_topic(
     await services.base.set_data_to_db(user, sub_topic=sub_topic)
 
     sub_sub_topics = await wrapper.get_sub_sub_topics()
+    sub_sub_topics = await item_filters.sub_sub_topics.filter(sub_sub_topics)
     next_state = UserStates.Sub_sub_topic
     if sub_sub_topics:
         markup = markups.sub_sub_topics(sub_sub_topics)
@@ -219,7 +222,7 @@ async def sub_sub_topic(
     else:
         keyboard[next_state.state] = None
         message.text = None
-        await exercise(message, user, wrapper, item_filterer, keyboard, state)
+        await exercise(message, user, wrapper, item_filters, keyboard, state)
 
 
 @dp.message_handler(state=UserStates.Sub_sub_topic)
@@ -227,7 +230,7 @@ async def exercise(
     message: types.Message,
     user: User,
     wrapper: IWrapperForBot,
-    item_filterer: ItemFiltererI,
+    item_filters: ItemFilters,
     keyboard: dict,
     state: FSMContext,
 ):
@@ -235,6 +238,7 @@ async def exercise(
     await services.base.set_data_to_db(user, sub_sub_topic=sub_sub_topic)
 
     exercises = await wrapper.get_exercises()
+    exercises = await item_filters.exercises.filter(exercises)
     markup = markups.exercises(exercises)
     await message.answer(config.MSG_EXERCISE, reply_markup=markup)
 

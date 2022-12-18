@@ -10,7 +10,7 @@ aiogram = "*"
 httpx = "*"
 alembic = "*"
 python-dotenv = "*"
-gino = {version = "==1.0.1", extras = ["asyncpg"]}
+gino = "==1.0.1"
 psycopg2-binary = "*"
 uvloop = "*"
 ujson = "*"
@@ -19,6 +19,7 @@ click = "*"
 pillow = "*"
 pymongo = "*"
 motor = "*"
+asyncpg = "0.27.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"

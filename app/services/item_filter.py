@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, TypeVar
+from typing import Generic, List, Optional, TypeVar
 
 T = TypeVar("T")
 
 # interface
 
 
-class ItemFilter(ABC):
+class ItemFilter(ABC, Generic[T]):
     @abstractmethod
     async def filter(self, input: List[T]) -> List[T]:
         pass
@@ -16,8 +16,8 @@ class ItemFilter(ABC):
 # impl
 
 
-class _AbstractItemFilter(ItemFilter):
-    def __init__(self, filter_items: Optional[List]):
+class _AbstractItemFilter(ItemFilter, Generic[T]):
+    def __init__(self, filter_items: Optional[List[T]]):
         self.filter_items = filter_items
 
     @staticmethod
@@ -79,11 +79,11 @@ class ItemFilterArgs:
 
 @dataclass
 class ItemFilters:
-    subjects: ItemFilter
-    authors: ItemFilter
-    specifications: ItemFilter
-    years: ItemFilter
-    main_topics: ItemFilter
-    sub_topics: ItemFilter
-    sub_sub_topics: ItemFilter
-    exercises: ItemFilter
+    subjects: ItemFilter[str]
+    authors: ItemFilter[str]
+    specifications: ItemFilter[str]
+    years: ItemFilter[int]
+    main_topics: ItemFilter[str]
+    sub_topics: ItemFilter[str]
+    sub_sub_topics: ItemFilter[str]
+    exercises: ItemFilter[str]

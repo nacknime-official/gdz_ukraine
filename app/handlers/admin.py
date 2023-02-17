@@ -62,8 +62,9 @@ async def send_all_no(query: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(commands="count_alive_users", is_admin=True, state="*")
 async def cmd_count_alive_users(message: types.Message, state: FSMContext):
-    count_alive_users = await services.admin.send_all(bot=bot, user_model=User)
-    await message.answer(config.MSG_SUCCESSFUL_SEND_ALL.format(count_alive_users))
+    await services.admin.count_alive_users_and_send_result(
+        bot, message.from_user.id, User
+    )
 
 
 # end send_all command }}}

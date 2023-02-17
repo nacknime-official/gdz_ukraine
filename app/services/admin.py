@@ -9,6 +9,7 @@ import typing
 from aiogram import Bot, types
 from aiogram.dispatcher import FSMContext
 from aiogram.types.chat import ChatActions
+from sqlalchemy.util import counter
 
 from app import config
 from app.models.db import db
@@ -275,14 +276,15 @@ async def check_user_alive(
     return error
 
 
-async def scheduled_count_alive_users(bot: Bot, user_model: typing.Type[User]):
+async def count_alive_users(bot: Bot, user_model: typing.Type[User]) -> int:
     """
-    Count alive users used with systemd or crontab
-    """
+    Count alive users
 
-    await bot.send_message(
-        config.ADMIN_ID, "Запланированная рассылка для подсчёта юзеров начата"
-    )
+    :param bot:         bot obj
+    :param user_model:  user's model for getting user from DB
+
+    :returns:           count of alive users
+    """
 
     count_alive_users = 0
 
@@ -295,9 +297,25 @@ async def scheduled_count_alive_users(bot: Bot, user_model: typing.Type[User]):
                 count_alive_users += 1
                 await asyncio.sleep(0.05)
 
-    await bot.send_message(
-        config.ADMIN_ID, config.MSG_SUCCESSFUL_SEND_ALL.format(count_alive_users)
-    )
+    return count_alive_users
+
+
+async def count_alive_users_and_send_result(
+    bot: Bot, to_user_id: typing.Union[int, str], user_model: typing.Type[User]
+):
+    """
+    Count alive users and send result to user with `to_user_id` id
+
+    :param bot:         bot obj
+    :param to_user_id:  user's id
+    :param user_model:  user's model for getting user from DB
+
+    :returns:           count of alive users
+    """
+
+    await bot.send_message(to_user_id, config.MSG_BEGIN_COUNTING_ALIVE_USERS)
+    res = await count_alive_users(bot=bot, user_model=User)
+    await bot.send_message(to_user_id, config.MSG_END_COUNTING_ALIVE_USERS.format(res))
 
 
 async def is_user_subscribed_to_notifications(

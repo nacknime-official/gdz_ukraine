@@ -1,6 +1,6 @@
 import click
 
-from app import misc, services
+from app import config, misc, services
 from app.models.user import User
 
 
@@ -15,7 +15,8 @@ def run():
     misc.runner.start_polling()
 
 
+
 @cli.command()
 def count_alive_users():
     misc.setup()
-    misc.runner.start(services.admin.scheduled_count_alive_users(misc.bot, User))
+    misc.runner.start(services.admin.count_alive_users_and_send_result(misc.bot, config.ADMIN_ID, User))

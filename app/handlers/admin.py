@@ -47,7 +47,7 @@ async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
     count_alive_users = await services.admin.send_all(
         sending_message=sending_message, user_model=User
     )
-    await query.message.answer(config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users))
+    await query.message.answer(config.MSG_SUCCESSFUL_SEND_ALL.format(count_alive_users))
 
 
 @dp.callback_query_handler(
@@ -63,7 +63,7 @@ async def send_all_no(query: types.CallbackQuery, state: FSMContext):
 @dp.message_handler(commands="count_alive_users", is_admin=True, state="*")
 async def cmd_count_alive_users(message: types.Message, state: FSMContext):
     count_alive_users = await services.admin.send_all(bot=bot, user_model=User)
-    await message.answer(config.MSG_SUCCESFUL_SEND_ALL.format(count_alive_users))
+    await message.answer(config.MSG_SUCCESSFUL_SEND_ALL.format(count_alive_users))
 
 
 # end send_all command }}}

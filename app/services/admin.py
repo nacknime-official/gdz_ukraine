@@ -42,6 +42,8 @@ async def send_message_catching_errors(
             await message.copy_to(chat_id)
     except UserIsNotWithUsException as e:
         error = e.error_message
+    except Exception as e:
+        error = str(e)
 
     return message, error
 

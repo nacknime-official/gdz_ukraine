@@ -19,6 +19,13 @@ POSTGRES_URI = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST
 MONGO_HOST = os.getenv("MONGO_HOST", default="localhost")
 MONGO_PORT = os.getenv("MONGO_PORT", default="27017")
 
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", default="localhost")
+RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", default=5672))
+RABBITMQ_USER = os.getenv("RABBITMQ_USER", default="guest")
+RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", default="guest")
+RABBITMQ_EXCHANGE_NAME = os.getenv("RABBITMQ_EXCHANGE_NAME", default="broadcast")
+RABBITMQ_QUEUE_NAME = os.getenv("RABBITMQ_QUEUE_NAME", default="broadcast")
+
 PREFIX_WRONG_PHOTO_SIZE = "wrong_size_"
 WATERMARK_PATH = str(Path.cwd() / "static" / "watermark.png")
 

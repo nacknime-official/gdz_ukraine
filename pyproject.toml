@@ -20,6 +20,9 @@ pillow = "*"
 pymongo = "*"
 motor = "*"
 asyncpg = "0.27.0"
+black = "^23.3.0"
+aio-pika = "^9.0.5"
+aiolimiter = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "*"

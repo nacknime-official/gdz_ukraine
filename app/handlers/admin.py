@@ -5,6 +5,7 @@ from aiogram.types import ContentType
 from app import config, services
 from app.misc import bot, dp
 from app.models.user import User
+from app.services.broadcast import broadcast_queue
 from app.utils import helper, markups
 from app.utils.states import AdminStates
 
@@ -44,10 +45,11 @@ async def send_all_yes(query: types.CallbackQuery, state: FSMContext):
     sending_message = types.Message(
         message_id=sending_message_id, chat=types.Chat(id=query.from_user.id)
     )
-    count_alive_users = await services.admin.send_all(
-        sending_message=sending_message, user_model=User
+    await services.admin.send_all_publish_to_queue(
+        sending_message=sending_message,
+        user_model=User,
+        publisher=broadcast_queue.broadcast_publisher,
     )
-    await query.message.answer(config.MSG_SUCCESSFUL_SEND_ALL.format(count_alive_users))
 
 
 @dp.callback_query_handler(
@@ -68,6 +70,7 @@ async def cmd_count_alive_users(message: types.Message, state: FSMContext):
 
 
 # end send_all command }}}
+
 
 # block {{{
 @dp.message_handler(commands="block", is_admin=True, state="*")
@@ -148,6 +151,7 @@ async def block_unblock_no(query: types.CallbackQuery):
 
 # block }}}
 
+
 # notifications {{{
 @dp.message_handler(commands="toggle_notifs", is_admin=True, state="*")
 async def toggle_user_is_subscribed_to_notifications(
@@ -216,11 +220,10 @@ async def send_notifs_yes(query: types.CallbackQuery, state: FSMContext):
     sending_message = types.Message(
         message_id=sending_message_id, chat=types.Chat(id=query.from_user.id)
     )
-    count_alive_users = await services.admin.send_notifs(
-        sending_message=sending_message, user_model=User
-    )
-    await query.message.answer(
-        config.MSG_SUCCESSFUL_SEND_NOTIFS.format(count_alive_users)
+    await services.admin.send_notifs_publish_to_queue(
+        sending_message=sending_message,
+        user_model=User,
+        publisher=broadcast_queue.broadcast_publisher,
     )
 
 

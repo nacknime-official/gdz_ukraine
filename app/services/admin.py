@@ -14,6 +14,7 @@ from sqlalchemy.util import counter
 from app import config
 from app.models.db import db
 from app.models.user import User
+from app.services.broadcast.interface import Publisher
 from app.utils.exceptions import (
     UserIsNotWithUsException,
     catch_user_is_not_with_us_exceptions,
@@ -143,6 +144,52 @@ async def send_notifs(
         sending_message=sending_message,
         users_ids=subscribed_to_notifications_users_ids,
     )
+
+
+async def send_all_publish_to_queue(
+    *,
+    sending_message: types.Message,
+    user_model: typing.Type[User],
+    publisher: Publisher,
+) -> None:
+    """
+    Starts a broadcasting process to all users.
+    It's only admin's feature
+
+    :param message:         message that will be sent to the all users
+    :param user_model:      user's model for getting all user's id
+    :param publisher:       publisher for broadcasting
+    """
+
+    async with db.transaction():
+        async for user_id in user_model.select("user_id").gino.iterate():
+            user_id = user_id[0]
+            await publisher.publish(user_id, sending_message.message_id)
+    await publisher.publish_end_of_broadcast()
+
+
+async def send_notifs_publish_to_queue(
+    *,
+    sending_message: types.Message,
+    user_model: typing.Type[User],
+    publisher: Publisher,
+) -> None:
+    """
+    Starts a broadcasting process to all users, except for those unsubscribed to notifications.
+    It's only admin's feature
+
+    :param message:         message that will be sent to the all users
+    :param user_model:      user's model for getting all user's id
+    :param publisher:       publisher for broadcasting
+    """
+
+    async with db.transaction():
+        async for user_id in user_model.select("user_id").where(
+            user_model.is_subscribed_to_notifications == True
+        ).gino.iterate():
+            user_id = user_id[0]
+            await publisher.publish(user_id, sending_message.message_id)
+    await publisher.publish_end_of_broadcast()
 
 
 async def set_blocking_user_id(

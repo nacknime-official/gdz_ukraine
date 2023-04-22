@@ -1,6 +1,7 @@
 import typing
 import aio_pika
 import asyncio
+import aiolimiter
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils.executor import Executor
@@ -95,6 +96,8 @@ class BroadcastConsumer(Consumer):
         self.lock = asyncio.Lock()
         self.sent_messages_count = 0
 
+        self.limiter = aiolimiter.AsyncLimiter(10, 1)
+
     async def _setup(self):
         if not self.connection:
             self.connection = await aio_pika.connect_robust(
@@ -118,7 +121,6 @@ class BroadcastConsumer(Consumer):
     async def on_message(self, message: aio_pika.abc.AbstractIncomingMessage):
         body = message.body.decode()
         try:
-            # TOOD: rate limiter
             await self.process_message(body)
             await message.ack()
         except Exception as e:
@@ -146,7 +148,8 @@ class BroadcastConsumer(Consumer):
             chat=types.Chat(id=config.ADMIN_ID),
         )
 
-        _, error = await send_message_catching_errors(user_id, msg)
+        async with self.limiter:
+            _, error = await send_message_catching_errors(user_id, msg)
         if error:
             return
         async with self.lock:

@@ -148,6 +148,21 @@ yarl = ">=1.0,<2.0"
 speedups = ["Brotli", "aiodns", "cchardet"]
 
 [[package]]
+name = "aiolimiter"
+version = "1.0.0"
+description = "asyncio rate limiter, a leaky bucket implementation"
+category = "main"
+optional = false
+python-versions = ">=3.6.1,<4.0.0"
+files = [
+    {file = "aiolimiter-1.0.0-py3-none-any.whl", hash = "sha256:f1c5ba2a2861cd4a126c1294f5282208383e67d5b128a4f32def0c702cae8039"},
+    {file = "aiolimiter-1.0.0.tar.gz", hash = "sha256:9d40767e4476048145dfa9f61948445168d6e63cf42c95785a20b9aaff2e4564"},
+]
+
+[package.extras]
+docs = ["aiohttp-theme (>=0.1.6,<0.2.0)", "sphinx (>=2.2.1,<5.0.0)", "sphinx-autodoc-typehints (>=1.10.3,<2.0.0)", "sphinxcontrib-spelling (>=4.3,<8.0)", "toml (>=0.10.0,<0.11.0)"]
+
+[[package]]
 name = "aiormq"
 version = "6.7.4"
 description = "Pure python AMQP asynchronous client library"
@@ -1839,4 +1854,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "a434572f5ec0a9f8a77d04199e942100028adbf878f6bbfe4a1ee92b208a64e4"
+content-hash = "e496c2309f5bbc644f07d609ccfdcffdbd6c4fc4415a7435bd0e905598037fa8"

@@ -10,6 +10,8 @@ services:
                 condition: service_healthy
             mongo:
                 condition: service_started
+            rabbitmq:
+                condition: service_healthy
         env_file: .env
         environment:
             POSTGRES_HOST: postgres
@@ -19,6 +21,7 @@ services:
             POSTGRES_DB: "${POSTGRES_DB}"
             MONGO_HOST: mongo
             MONGO_PORT: "${MONGO_PORT}"
+            RABBITMQ_HOST: rabbitmq
 
     mongo:
         image: mongo:4.4.6
@@ -41,6 +44,23 @@ services:
             POSTGRES_USER: "${POSTGRES_USER}"
             POSTGRES_DB: "${POSTGRES_DB}"
 
+    rabbitmq:
+        image: rabbitmq:3.11.13-alpine
+        user: rabbitmq
+        restart: on-failure
+        volumes:
+            - rabbitmq-data:/var/lib/rabbitmq
+        healthcheck:
+            test: rabbitmq-diagnostics -q ping
+            interval: 1s
+            timeout: 5s
+            retries: 5
+        environment:
+            RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+            RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD}"
+
+
 volumes:
     mongo-data:
     postgres-data:
+    rabbitmq-data:

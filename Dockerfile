@@ -10,4 +10,4 @@ RUN pip install poetry && \
     POETRY_VIRTUALENVS_CREATE=false poetry install
 COPY . /app/
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

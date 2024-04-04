@@ -5,7 +5,7 @@ from aiogram.utils.executor import Executor
 # TODO: is it needed?
 class HttpxClient:
     def __init__(self):
-        self.client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient(verify=False)
 
     async def get(self, link):
         r = await self.client.get(link)

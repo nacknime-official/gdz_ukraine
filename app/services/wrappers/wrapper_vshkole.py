@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from aiogram.dispatcher.storage import FSMContext
+from app.config import VSHKOLE_API_BASE
 
 from app.models.user import User
 from app.services import base
@@ -32,10 +33,10 @@ def register_data_func(f):
 
 class WrapperVshkole(IWrapper):
     API_SUBJECTS = (
-        "https://vshkole.com/api/get_class_subjects?new-app=1&class_id={}&type=ab"
+        f"{VSHKOLE_API_BASE}/api/get_class_subjects?new-app=1&class_id={{}}&type=ab"
     )
-    API_SUBJECT_ENTITIES = "https://vshkole.com/api/get_subject_class_entities?new-app=1&class_id={}&subject_id={}&type=ab"
-    API_ENTITIE = "https://vshkole.com/api/get_entity_by_id?new-app=1&id={}&type=ab"
+    API_SUBJECT_ENTITIES = f"{VSHKOLE_API_BASE}/api/get_subject_class_entities?new-app=1&class_id={{}}&subject_id={{}}&type=ab"
+    API_ENTITIE = f"{VSHKOLE_API_BASE}/api/get_entity_by_id?new-app=1&id={{}}&type=ab"
 
     def __init__(
         self,

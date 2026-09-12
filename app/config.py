@@ -8,6 +8,7 @@ load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 ADMIN_USERNAME = str(os.getenv("ADMIN_USERNAME"))
+VSHKOLE_API_BASE = str(os.getenv("VSHKOLE_API_BASE"))
 
 POSTGRES_HOST = os.getenv("POSTGRES_HOST", default="localhost")
 POSTGRES_PORT = os.getenv("POSTGRES_PORT", default=5432)
